@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTC Bot Status — Saurishg</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#07090f; --card:#0f1629; --card2:#131d35; --border:#1c2a47;
+      --indigo:#6366f1; --purple:#8b5cf6; --green:#10b981; --amber:#f59e0b;
+      --cyan:#06b6d4; --red:#ef4444; --text:#f0f4ff; --muted:#64748b;
+    }
+    body {
+      font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
+      min-height:100vh; padding:32px 16px 48px;
+      display:flex; align-items:flex-start; justify-content:center;
+    }
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 10%, rgba(245,158,11,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 35% at 80% 80%, rgba(99,102,241,.1) 0%, transparent 55%);
+    }
+    .wrap { position:relative; z-index:1; width:100%; max-width:560px; }
+    .back {
+      display:inline-flex; align-items:center; gap:6px; padding:7px 12px;
+      background:var(--card); border:1px solid var(--border); border-radius:8px;
+      color:var(--muted); text-decoration:none; font-size:12px; font-weight:600;
+      margin-bottom:24px; transition:color .15s;
+    }
+    .back:hover { color:var(--text); }
+    .header { text-align:center; margin-bottom:28px; }
+    .header .emoji { font-size:36px; margin-bottom:8px; }
+    .header h1 {
+      font-size:24px; font-weight:800; letter-spacing:-.4px; margin-bottom:6px;
+      background:linear-gradient(135deg,#f59e0b,#ef4444);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .header .sub { font-size:12.5px; color:var(--muted); }
+    .live-dot {
+      display:inline-flex; align-items:center; gap:6px; margin-top:10px;
+      font-size:11px; color:var(--green); background:rgba(16,185,129,.1);
+      border:1px solid rgba(16,185,129,.2); padding:4px 12px; border-radius:99px;
+    }
+    .live-dot::before {
+      content:''; width:7px; height:7px; border-radius:50%; background:var(--green);
+      animation:pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:.4} }
+    .card {
+      background:var(--card); border:1px solid var(--border); border-radius:14px;
+      padding:20px; margin-bottom:14px;
+    }
+    .card-title {
+      font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase;
+      color:var(--muted); margin-bottom:14px;
+    }
+    .price-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .live-price-label { font-size:12px; color:var(--muted); }
+    #live-price { font-size:24px; font-weight:800; letter-spacing:-.5px; }
+    #live-change { font-size:12px; font-weight:600; padding:3px 9px; border-radius:99px; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+    .stat { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+    .stat .label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
+    .stat .value { font-size:17px; font-weight:800; letter-spacing:-.3px; }
+    .stat .extra { font-size:11px; color:var(--muted); margin-top:3px; }
+    .pnl-card { display:flex; justify-content:space-between; align-items:center; }
+    .sent-pill {
+      display:inline-block; padding:3px 10px; border-radius:99px;
+      font-size:11px; font-weight:700;
+      background:#f59e0b22; color:#f59e0b;
+    }
+    ul { list-style:none; }
+    .footer { text-align:center; font-size:11px; color:#334155; margin-top:20px; line-height:1.6; }
+    .footer a { color:#475569; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <a href="./" class="back">← back</a>
+
+    <div class="header">
+      <div class="emoji">🪙</div>
+      <h1>BTC Trading Bot</h1>
+      <div class="sub">Binance Demo · EMA5/13 cross + RSI + ATR + News sentiment</div>
+      <div class="live-dot">Position open since 14 May 2026, 21:47</div>
+    </div>
+
+    <!-- Live price -->
+    <div class="card">
+      <div class="card-title">Live BTC Price</div>
+      <div class="price-row">
+        <div>
+          <div class="live-price-label">BTC/USDT (CoinGecko)</div>
+          <div id="live-price">Loading…</div>
+        </div>
+        <div id="live-change">—</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);">Auto-refreshes every 30s</div>
+    </div>
+
+    <!-- Position -->
+    <div class="card">
+      <div class="card-title">Open Position</div>
+      <div class="grid2">
+        <div class="stat">
+          <div class="label">Entry</div>
+          <div class="value">$81,412.31</div>
+        </div>
+        <div class="stat">
+          <div class="label">Size</div>
+          <div class="value">0.0415 BTC</div>
+          <div class="extra">$3,378.61 notional</div>
+        </div>
+        <div class="stat">
+          <div class="label">Take Profit</div>
+          <div class="value" style="color:var(--green)">$86,822.18</div>
+          <div class="extra">+6.65%</div>
+        </div>
+        <div class="stat">
+          <div class="label">Stop Loss</div>
+          <div class="value" style="color:var(--red)">$79,592.62</div>
+          <div class="extra">-2.24%</div>
+        </div>
+      </div>
+      <div class="stat pnl-card">
+        <div>
+          <div class="label">Last Trade P&L (after fees)</div>
+          <div class="value" style="color:#ef4444">$-13.51</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="label">Last Action</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-top:6px;">BUY</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- News sentiment -->
+    <div class="card">
+      <div class="card-title">News Sentiment <span class="sent-pill">Mixed · +0.00</span></div>
+      <div style="font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:14px;">The headlines present a mixed sentiment with both positive developments like the CLARITY Act and tokenization efforts, alongside negative news such as Bitcoin Depot&#x27;s legal issues.</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:.5px;">RECENT HEADLINES</div>
+      <ul><li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:12.5px; color:var(--text); line-height:1.5;">Cointelegraph.com News</li><li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:12.5px; color:var(--text); line-height:1.5;">US CLARITY Act brings ‘major spike of euphoria’ to Bitcoin: Santiment</li><li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:12.5px; color:var(--text); line-height:1.5;">House committee leaders urge Trump to nominate CFTC members, citing CLARITY Act</li><li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:12.5px; color:var(--text); line-height:1.5;">Bitcoin Depot filing casts doubt on company’s future amid lawsuits</li><li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:12.5px; color:var(--text); line-height:1.5;">ICE, CME press US regulators to &#x27;rein in&#x27; Hyperliquid energy trading: Report</li><li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:12.5px; color:var(--text); line-height:1.5;">Bhutan ‘doesn’t recall’ selling any bitcoin, disputing widely-tracked $1 billion BTC drawdown</li></ul>
+      <div style="font-size:10.5px;color:#334155;margin-top:10px;">Last news fetch: 16 May 05:58 UTC</div>
+    </div>
+
+    <div class="footer">
+      Generated 16 May 2026, 15:09 · Demo mode (no real money)<br/>
+      <a href="https://github.com/Saurishg" target="_blank" rel="noopener">github.com/Saurishg</a>
+    </div>
+
+  </div>
+
+  <script>
+    async function fetchPrice() {
+      try {
+        const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        const d = await r.json();
+        const p = d.bitcoin.usd;
+        const c = d.bitcoin.usd_24h_change;
+        document.getElementById('live-price').textContent = '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const ch = document.getElementById('live-change');
+        ch.textContent = (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
+        ch.style.background = c >= 0 ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)';
+        ch.style.color = c >= 0 ? '#10b981' : '#ef4444';
+      } catch(e) {
+        document.getElementById('live-price').textContent = '—';
+      }
+    }
+    fetchPrice();
+    setInterval(fetchPrice, 30000);
+  </script>
+</body>
+</html>
