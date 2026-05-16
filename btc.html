@@ -10,8 +10,7 @@
     *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
       --bg:#07090f; --card:#0f1629; --card2:#131d35; --border:#1c2a47;
-      --indigo:#6366f1; --purple:#8b5cf6; --green:#10b981; --amber:#f59e0b;
-      --cyan:#06b6d4; --red:#ef4444; --text:#f0f4ff; --muted:#64748b;
+      --green:#10b981; --amber:#f59e0b; --red:#ef4444; --text:#f0f4ff; --muted:#64748b;
     }
     body {
       font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
@@ -32,7 +31,7 @@
       margin-bottom:24px; transition:color .15s;
     }
     .back:hover { color:var(--text); }
-    .header { text-align:center; margin-bottom:28px; }
+    .header { text-align:center; margin-bottom:24px; }
     .header .emoji { font-size:36px; margin-bottom:8px; }
     .header h1 {
       font-size:24px; font-weight:800; letter-spacing:-.4px; margin-bottom:6px;
@@ -42,13 +41,14 @@
     .header .sub { font-size:12.5px; color:var(--muted); }
     .live-dot {
       display:inline-flex; align-items:center; gap:6px; margin-top:10px;
-      font-size:11px; color:var(--green); background:rgba(16,185,129,.1);
-      border:1px solid rgba(16,185,129,.2); padding:4px 12px; border-radius:99px;
+      font-size:11px; color:var(--muted); background:rgba(100,116,139,.1);
+      border:1px solid rgba(100,116,139,.2); padding:4px 12px; border-radius:99px;
     }
+    .live-dot.alive { color:var(--green); background:rgba(16,185,129,.1); border-color:rgba(16,185,129,.2); }
     .live-dot::before {
-      content:''; width:7px; height:7px; border-radius:50%; background:var(--green);
-      animation:pulse 1.6s ease-in-out infinite;
+      content:''; width:7px; height:7px; border-radius:50%; background:#64748b;
     }
+    .live-dot.alive::before { background:var(--green); animation:pulse 1.6s ease-in-out infinite; }
     @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:.4} }
     .card {
       background:var(--card); border:1px solid var(--border); border-radius:14px;
@@ -56,22 +56,24 @@
     }
     .card-title {
       font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase;
-      color:var(--muted); margin-bottom:14px;
+      color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .status-tag {
+      font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px;
+      border:1px solid; letter-spacing:.4px; text-transform:none;
     }
     .price-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-    .live-price-label { font-size:12px; color:var(--muted); }
-    #live-price { font-size:24px; font-weight:800; letter-spacing:-.5px; }
+    #live-price { font-size:26px; font-weight:800; letter-spacing:-.5px; }
     #live-change { font-size:12px; font-weight:600; padding:3px 9px; border-radius:99px; }
-    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .stat { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
     .stat .label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
     .stat .value { font-size:17px; font-weight:800; letter-spacing:-.3px; }
     .stat .extra { font-size:11px; color:var(--muted); margin-top:3px; }
-    .pnl-card { display:flex; justify-content:space-between; align-items:center; }
-    .sent-pill {
-      display:inline-block; padding:3px 10px; border-radius:99px;
-      font-size:11px; font-weight:700;
-      background:#f59e0b22; color:#f59e0b;
+    .alert {
+      margin-top:14px; padding:10px 14px; border-radius:8px;
+      background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2);
+      font-size:12px; color:#f59e0b; line-height:1.5;
     }
     ul { list-style:none; }
     .footer { text-align:center; font-size:11px; color:#334155; margin-top:20px; line-height:1.6; }
@@ -86,70 +88,91 @@
     <div class="header">
       <div class="emoji">🪙</div>
       <h1>BTC Trading Bot</h1>
-      <div class="sub">Binance Demo · EMA5/13 cross + RSI + ATR + News sentiment</div>
-      <div class="live-dot">Position open since —</div>
+      <div class="sub">Binance Demo · EMA + RSI + MACD + ATR + News sentiment · 5 min cycle</div>
+      <div class="live-dot  alive">Bot online · 16 May 2026, 15:35 IST</div>
     </div>
 
-    <!-- Live price -->
+    <!-- Live price (CoinGecko, client-side) -->
     <div class="card">
       <div class="card-title">Live BTC Price</div>
       <div class="price-row">
         <div>
-          <div class="live-price-label">BTC/USDT (CoinGecko)</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">BTC/USDT · CoinGecko</div>
           <div id="live-price">Loading…</div>
         </div>
         <div id="live-change">—</div>
       </div>
-      <div style="font-size:11px;color:var(--muted);">Auto-refreshes every 30s</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">Auto-refreshes every 30s</div>
     </div>
 
-    <!-- Position -->
-    <div class="card">
-      <div class="card-title">Open Position</div>
-      <div class="grid2">
-        <div class="stat">
-          <div class="label">Entry</div>
-          <div class="value">$0.00</div>
-        </div>
-        <div class="stat">
-          <div class="label">Size</div>
-          <div class="value">0.0000 BTC</div>
-          <div class="extra">$0.00 notional</div>
-        </div>
-        <div class="stat">
-          <div class="label">Take Profit</div>
-          <div class="value" style="color:var(--green)">$0.00</div>
-          <div class="extra">+0.00%</div>
-        </div>
-        <div class="stat">
-          <div class="label">Stop Loss</div>
-          <div class="value" style="color:var(--red)">$0.00</div>
-          <div class="extra">0.00%</div>
-        </div>
-      </div>
-      <div class="stat pnl-card">
-        <div>
-          <div class="label">Last Trade P&L (after fees)</div>
-          <div class="value" style="color:#ef4444">$-13.51</div>
-        </div>
-        <div style="text-align:right;">
-          <div class="label">Last Action</div>
-          <div style="font-size:14px;font-weight:700;color:var(--text);margin-top:6px;">BUY</div>
-        </div>
-      </div>
+    
+<div class="card">
+  <div class="card-title">Live Indicators <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">· last cycle 2026-05-16 15:31</span></div>
+  <div class="grid2">
+    <div class="stat">
+      <div class="label">Bot Price</div>
+      <div class="value">$77,994.08</div>
     </div>
+    <div class="stat">
+      <div class="label">RSI (14)</div>
+      <div class="value" style="color:#64748b">42.2</div>
+      <div class="extra">Neutral</div>
+    </div>
+    <div class="stat">
+      <div class="label">MACD</div>
+      <div class="value" style="color:#ef4444">▼ Bearish</div>
+    </div>
+    <div class="stat">
+      <div class="label">News Sentiment</div>
+      <div class="value" style="color:#ef4444">Bearish</div>
+      <div class="extra">-0.70</div>
+    </div>
+  </div>
+</div>
 
-    <!-- News sentiment -->
+    
     <div class="card">
-      <div class="card-title">News Sentiment <span class="sent-pill">Mixed · +0.00</span></div>
-      <div style="font-size:12.5px;color:var(--text);line-height:1.6;margin-bottom:14px;"></div>
-      <div style="font-size:10px;color:var(--muted);margin-bottom:4px;letter-spacing:.5px;">RECENT HEADLINES</div>
-      <ul></ul>
-      <div style="font-size:10.5px;color:#334155;margin-top:10px;">Last news fetch: —</div>
+      <div class="card-title">Position Status</div>
+      <div style="display:flex;align-items:center;gap:14px;padding:8px 4px;">
+        <div style="font-size:32px;">⏳</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:3px;">Scanning for entry</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5;">No open position. Bot is waiting for a BUY signal.</div>
+        </div>
+      </div>
+      <div class="alert"><strong>Currently blocked by:</strong> EMA bearish, RSI=42, MACD bearish, news=-0.70</div>
     </div>
+    
+    
+<div class="card">
+  <div class="card-title">All-Time Stats</div>
+  <div class="grid2">
+    <div class="stat">
+      <div class="label">Total Trades</div>
+      <div class="value">1</div>
+    </div>
+    <div class="stat">
+      <div class="label">Win Rate</div>
+      <div class="value" style="color:#ef4444">0.0%</div>
+      <div class="extra">0W / 1L</div>
+    </div>
+    <div class="stat">
+      <div class="label">Net P&L (after fees)</div>
+      <div class="value" style="color:#ef4444">$-13.51</div>
+    </div>
+    <div class="stat">
+      <div class="label">Last Trade</div>
+      <div class="value">BUY</div>
+      <div class="extra">$-13.51</div>
+    </div>
+  </div>
+</div>
+
+    
 
     <div class="footer">
-      Generated 16 May 2026, 15:30 · Demo mode (no real money)<br/>
+      Generated 16 May 2026, 15:35 IST · Demo mode (no real money)<br/>
+      Bot logs to PM2 every 5 min · Status auto-refreshes every 10 min<br/>
       <a href="https://github.com/Saurishg" target="_blank" rel="noopener">github.com/Saurishg</a>
     </div>
 
