@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTC Futures Bot (v2) — Saurishg</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --bg:#07090f; --card:#0f1629; --card2:#131d35; --border:#1c2a47;
+      --green:#10b981; --amber:#f59e0b; --red:#ef4444; --text:#f0f4ff; --muted:#64748b;
+    }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:32px 16px 48px; display:flex; align-items:flex-start; justify-content:center; }
+    body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(239,68,68,.10) 0%, transparent 60%), radial-gradient(ellipse 50% 35% at 80% 80%, rgba(99,102,241,.1) 0%, transparent 55%); }
+    .wrap { position:relative; z-index:1; width:100%; max-width:580px; }
+    .back { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--muted); text-decoration:none; font-size:12px; font-weight:600; margin-bottom:24px; transition:color .15s; }
+    .back:hover { color:var(--text); }
+    .header { text-align:center; margin-bottom:24px; }
+    .header .emoji { font-size:36px; margin-bottom:8px; }
+    .header h1 { font-size:24px; font-weight:800; letter-spacing:-.4px; margin-bottom:6px; background:linear-gradient(135deg,#ef4444,#8b5cf6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .header .sub { font-size:12.5px; color:var(--muted); }
+    .live-dot { display:inline-flex; align-items:center; gap:6px; margin-top:10px; font-size:11px; color:var(--green); background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.2); padding:4px 12px; border-radius:99px; }
+    .live-dot::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:.4} }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:14px; }
+    .card-title { font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .status-tag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; border:1px solid; letter-spacing:.4px; text-transform:none; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .stat { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+    .stat .label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
+    .stat .value { font-size:17px; font-weight:800; letter-spacing:-.3px; }
+    .stat .extra { font-size:11px; color:var(--muted); margin-top:3px; }
+    .alert { margin-top:14px; padding:10px 14px; border-radius:8px; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2); font-size:12px; color:var(--amber); line-height:1.5; }
+    .footer { text-align:center; font-size:11px; color:#334155; margin-top:20px; line-height:1.6; }
+    .footer a { color:#475569; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="./" class="back">← back</a>
+    <div class="header">
+      <div class="emoji">🚀</div>
+      <h1>BTC Futures Bot</h1>
+      <div class="sub">Binance Futures · BTCUSDT · 1h entry, 4h HTF · short-only · v2</div>
+      <div class="live-dot">TESTNET · 2026-05-16 21:58</div>
+    </div>
+
+    <!-- Live BTC price (client-side, CoinGecko) -->
+    <div class="card">
+      <div class="card-title">Live BTC Price</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">BTC/USDT · CoinGecko</div>
+          <div id="live-price" style="font-size:26px;font-weight:800;letter-spacing:-.5px;">Loading…</div>
+        </div>
+        <div id="live-change" style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;">—</div>
+      </div>
+    </div>
+
+    
+    <div class="card">
+      <div class="card-title">Position Status</div>
+      <div style="display:flex;align-items:center;gap:14px;padding:8px 4px;">
+        <div style="font-size:32px;">⏳</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;margin-bottom:3px;">Scanning for SHORT entry</div>
+          <div style="font-size:12px;color:var(--muted);">No open position. Bot is short-only (v2 backtest config).</div>
+        </div>
+      </div>
+      <div class="alert"><strong>Blocked by:</strong> HTF dir=LONG (need SHORT), no breakdown (price above Donchian low), body=0.28&lt;0.5xATR, vol=0.63&lt;1.2xMA</div>
+    </div>
+    
+    
+<div class="card">
+  <div class="card-title">Live Indicators <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">· 2026-05-16 21:58</span></div>
+  <div class="grid2">
+    <div class="stat"><div class="label">Price</div><div class="value">$78,271</div></div>
+    <div class="stat"><div class="label">HTF (4h) Direction</div><div class="value" style="color:#10b981">LONG</div></div>
+    <div class="stat"><div class="label">ADX (14) ↑</div><div class="value" style="color:#10b981">57.0</div><div class="extra">in range</div></div>
+    <div class="stat"><div class="label">RSI (14)</div><div class="value">28.2</div></div>
+    <div class="stat"><div class="label">Donchian Low (20)</div><div class="value" style="color:#ef4444">$77,718</div><div class="extra">break this to short</div></div>
+    <div class="stat"><div class="label">Body / ATR</div><div class="value" style="color:#ef4444">0.28</div></div>
+    <div class="stat"><div class="label">Volume Ratio</div><div class="value" style="color:#ef4444">0.63×</div></div>
+    <div class="stat"><div class="label">ATR</div><div class="value">$238</div></div>
+  </div>
+</div>
+
+    
+<div class="card" style="border-color:rgba(99,102,241,.3);">
+  <div class="card-title">🎯 Strategy V2 <span class="status-tag" style="background:rgba(16,185,129,.1);color:#10b981;border-color:rgba(16,185,129,.3);">backtest-validated</span></div>
+  <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
+    Short-only Donchian breakdown on 1h entry, 4h HTF trend. Strict ADX gate.<br/>
+    <strong style="color:var(--text)">5y backtest:</strong> 25 trades · WR 96% · PF 3.03 · MaxDD 3.23% · 6/6 years profitable
+  </div>
+  <div class="grid2">
+    <div class="stat"><div class="label">ADX Range</div><div class="value" style="font-size:14px;">50-65</div></div>
+    <div class="stat"><div class="label">Body ≥</div><div class="value" style="font-size:14px;">0.5× ATR</div></div>
+    <div class="stat"><div class="label">Volume ≥</div><div class="value" style="font-size:14px;">1.2× MA20</div></div>
+    <div class="stat"><div class="label">R:R</div><div class="value" style="font-size:14px;">1:2.0 (SL 2.0× / TP 4.0×)</div></div>
+  </div>
+</div>
+
+    
+<div class="card">
+  <div class="card-title">All-Time Stats <span class="status-tag" style="background:rgba(245,158,11,.1);color:var(--amber);border-color:rgba(245,158,11,.3);">TESTNET</span></div>
+  <div class="grid2">
+    <div class="stat"><div class="label">Equity</div><div class="value">$5,000.00</div></div>
+    <div class="stat"><div class="label">Balance</div><div class="value">$5,000.00</div></div>
+    <div class="stat"><div class="label">Closed Trades</div><div class="value">0</div></div>
+    <div class="stat"><div class="label">Win Rate</div><div class="value" style="color:#ef4444">0.0%</div></div>
+    <div class="stat"><div class="label">Net P&L</div><div class="value" style="color:#10b981">+$0.00</div></div>
+    <div class="stat"><div class="label">Leverage</div><div class="value">5x</div></div>
+  </div>
+</div>
+
+
+    <div class="footer">
+      Generated 16 May 2026, 21:59 IST · Binance Futures testnet<br/>
+      Auto-refreshes every 10 min · <a href="https://github.com/Saurishg" target="_blank" rel="noopener">github.com/Saurishg</a>
+    </div>
+  </div>
+  <script>
+    async function fetchPrice() {
+      try {
+        const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        const d = await r.json();
+        const p = d.bitcoin.usd, c = d.bitcoin.usd_24h_change;
+        document.getElementById('live-price').textContent = '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const ch = document.getElementById('live-change');
+        ch.textContent = (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
+        ch.style.background = c >= 0 ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)';
+        ch.style.color = c >= 0 ? '#10b981' : '#ef4444';
+      } catch(e) { document.getElementById('live-price').textContent = '—'; }
+    }
+    fetchPrice(); setInterval(fetchPrice, 30000);
+  </script>
+</body>
+</html>
