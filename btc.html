@@ -89,7 +89,20 @@
       <div class="emoji">🪙</div>
       <h1>BTC Trading Bot</h1>
       <div class="sub">Binance Demo · EMA + RSI + MACD + ATR + News sentiment · 5 min cycle</div>
-      <div class="live-dot  alive">Bot online · 16 May 2026, 15:40 IST</div>
+      <div class="live-dot  alive">Bot online · 16 May 2026, 15:44 IST</div>
+      <div style="margin-top:14px;display:flex;justify-content:center;align-items:center;gap:10px;">
+        <button id="refresh-btn" onclick="refreshBot()" style="
+          padding:8px 16px; border-radius:8px; border:1px solid var(--border);
+          background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff;
+          font-size:12.5px; font-weight:700; cursor:pointer;
+          display:inline-flex; align-items:center; gap:6px;
+          box-shadow:0 4px 16px rgba(99,102,241,.35);
+          transition:transform .15s, opacity .15s;
+        ">
+          <span id="refresh-icon">⟳</span> <span id="refresh-text">Refresh from bot</span>
+        </button>
+        <span id="refresh-status" style="font-size:11px;color:var(--muted);"></span>
+      </div>
     </div>
 
     <!-- Live price (CoinGecko, client-side) -->
@@ -105,33 +118,39 @@
       <div style="font-size:11px;color:var(--muted);margin-top:4px;">Auto-refreshes every 30s</div>
     </div>
 
+    <!-- Live trade status banner — updated by the Refresh button -->
+    <div id="live-trade-banner" class="card" style="display:none;">
+      <div class="card-title">Live Trade Check</div>
+      <div id="live-trade-content" style="font-size:14px;line-height:1.5;"></div>
+    </div>
+
     
 <div class="card">
-  <div class="card-title">Bot Indicators <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">· last cycle 2026-05-16 15:37</span></div>
+  <div class="card-title">Bot Indicators <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">· last cycle 2026-05-16 15:42</span></div>
   <div class="grid2">
     <div class="stat">
       <div class="label">Bot Price (4h)</div>
-      <div class="value">$77,945.18</div>
+      <div class="value">$77,821.01</div>
     </div>
     <div class="stat">
       <div class="label">RSI (14)</div>
-      <div class="value" style="color:#64748b">41.9</div>
+      <div class="value" style="color:#64748b">41.2</div>
       <div class="extra">Neutral</div>
     </div>
     <div class="stat">
       <div class="label">MACD</div>
       <div class="value" style="color:#ef4444">▼ Bearish</div>
-      <div class="extra">Histogram: -236.70</div>
+      <div class="extra">Histogram: -244.63</div>
     </div>
     <div class="stat">
       <div class="label">EMA Trend (21/55/200)</div>
       <div class="value" style="color:#f59e0b;font-size:14px;">Short-term down</div>
-      <div class="extra">+0.35% vs EMA200</div>
+      <div class="extra">+0.19% vs EMA200</div>
     </div>
     <div class="stat">
       <div class="label">ATR Volatility</div>
-      <div class="value" style="color:#f59e0b">$873.63</div>
-      <div class="extra">1.12% · Normal</div>
+      <div class="value" style="color:#f59e0b">$880.66</div>
+      <div class="extra">1.13% · Normal</div>
     </div>
     <div class="stat">
       <div class="label">News Sentiment</div>
@@ -188,7 +207,7 @@
           <div style="font-size:12px;color:var(--muted);line-height:1.5;">No open position. Bot is waiting for a BUY signal.</div>
         </div>
       </div>
-      <div class="alert"><strong>Currently blocked by:</strong> EMA bearish, RSI=42, MACD bearish, news=-0.70</div>
+      <div class="alert"><strong>Currently blocked by:</strong> EMA bearish, RSI=41, MACD bearish, news=-0.70</div>
     </div>
     
     
@@ -219,7 +238,7 @@
     
 
     <div class="footer">
-      Generated 16 May 2026, 15:40 IST · Demo mode (no real money)<br/>
+      Generated 16 May 2026, 15:44 IST · Demo mode (no real money)<br/>
       Bot logs to PM2 every 5 min · Status auto-refreshes every 10 min<br/>
       <a href="https://github.com/Saurishg" target="_blank" rel="noopener">github.com/Saurishg</a>
     </div>
@@ -336,6 +355,102 @@
     }
     refreshAll();
     setInterval(refreshAll, 30000);
+
+    // ── Live bot status (calls the creator-dashboard API via Cloudflare tunnel)
+    const BOT_API = "https://initiatives-fin-here-ticket.trycloudflare.com";
+
+    async function refreshBot() {
+      const btn = document.getElementById('refresh-btn');
+      const icon = document.getElementById('refresh-icon');
+      const text = document.getElementById('refresh-text');
+      const status = document.getElementById('refresh-status');
+      const banner = document.getElementById('live-trade-banner');
+      const content = document.getElementById('live-trade-content');
+
+      if (!BOT_API) {
+        status.textContent = 'API URL not yet set — wait for next tunnel restart';
+        return;
+      }
+
+      btn.disabled = true; btn.style.opacity = .6;
+      icon.style.animation = 'spin 0.8s linear infinite';
+      text.textContent = 'Checking…'; status.textContent = '';
+
+      try {
+        const r = await fetch(BOT_API + '/api/bot-status', { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json();
+
+        banner.style.display = 'block';
+        const ind = d.indicators || {};
+        const state = d.state || {};
+        const hasPos = d.hasPosition;
+        const t = new Date(d.fetchedAt).toLocaleTimeString('en-US', {hour12:false});
+
+        if (hasPos) {
+          const entry = state.entry_price;
+          const tp = state.take_profit;
+          const sl = state.stop_loss;
+          const qty = state.qty;
+          const cur = ind.price || 0;
+          const pnlPct = entry ? ((cur - entry) / entry * 100) : 0;
+          const pnlColor = pnlPct >= 0 ? '#10b981' : '#ef4444';
+          content.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <div style="font-size:32px;">📈</div>
+              <div>
+                <div style="font-size:16px;font-weight:800;color:#10b981;">IN TRADE</div>
+                <div style="font-size:11.5px;color:var(--muted);">Entered @ $${entry.toLocaleString()} · ${qty} BTC</div>
+              </div>
+              <div style="margin-left:auto;text-align:right;">
+                <div style="font-size:20px;font-weight:800;color:${pnlColor};">${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(2)}%</div>
+                <div style="font-size:10px;color:var(--muted);">unrealised</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;font-size:11px;">
+              <span style="padding:4px 10px;border-radius:8px;background:rgba(16,185,129,.1);color:#10b981;">TP $${tp.toLocaleString()}</span>
+              <span style="padding:4px 10px;border-radius:8px;background:rgba(239,68,68,.1);color:#ef4444;">SL $${sl.toLocaleString()}</span>
+            </div>
+          `;
+        } else {
+          const blockers = [];
+          if (ind.ema21 < ind.ema55) blockers.push('EMA bearish');
+          if (ind.rsi < 50) blockers.push(`RSI=${Math.round(ind.rsi)}`);
+          if (ind.macd < ind.macd_sig) blockers.push('MACD bearish');
+          if (ind.news < -0.3) blockers.push(`news=${ind.news.toFixed(2)}`);
+          content.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="font-size:32px;">⏳</div>
+              <div style="flex:1;">
+                <div style="font-size:16px;font-weight:800;color:var(--amber);">NOT IN TRADE</div>
+                <div style="font-size:11.5px;color:var(--muted);">Bot is scanning. Last cycle: ${d.lastCycleTs || 'unknown'}</div>
+              </div>
+            </div>
+            ${blockers.length ? `<div class="alert" style="margin-top:14px;"><strong>Waiting for:</strong> ${blockers.join(', ')}</div>` : ''}
+          `;
+        }
+
+        status.textContent = '✓ Live · ' + t;
+        text.textContent = 'Refresh from bot';
+      } catch(e) {
+        status.textContent = '✗ ' + (e.message || 'Failed to reach bot');
+        text.textContent = 'Refresh from bot';
+      } finally {
+        btn.disabled = false; btn.style.opacity = 1;
+        icon.style.animation = '';
+      }
+    }
+
+    // Add spin keyframes if not present
+    if (!document.getElementById('spin-kf')) {
+      const s = document.createElement('style');
+      s.id = 'spin-kf';
+      s.textContent = '@keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }';
+      document.head.appendChild(s);
+    }
+
+    // Auto-fetch live status once on page load
+    if (BOT_API) refreshBot();
   </script>
 </body>
 </html>
