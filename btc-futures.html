@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BTC Futures Bot (v2) — Saurishg</title>
+  <title>Crypto Futures Bot (v6) — Saurishg</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
@@ -14,26 +14,35 @@
     }
     body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:32px 16px 48px; display:flex; align-items:flex-start; justify-content:center; }
     body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-      background: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(239,68,68,.10) 0%, transparent 60%), radial-gradient(ellipse 50% 35% at 80% 80%, rgba(99,102,241,.1) 0%, transparent 55%); }
-    .wrap { position:relative; z-index:1; width:100%; max-width:580px; }
+      background: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(245,158,11,.08) 0%, transparent 60%), radial-gradient(ellipse 50% 35% at 80% 80%, rgba(99,102,241,.1) 0%, transparent 55%); }
+    .wrap { position:relative; z-index:1; width:100%; max-width:640px; }
     .back { display:inline-flex; align-items:center; gap:6px; padding:7px 12px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--muted); text-decoration:none; font-size:12px; font-weight:600; margin-bottom:24px; transition:color .15s; }
     .back:hover { color:var(--text); }
     .header { text-align:center; margin-bottom:24px; }
-    .header .emoji { font-size:36px; margin-bottom:8px; }
-    .header h1 { font-size:24px; font-weight:800; letter-spacing:-.4px; margin-bottom:6px; background:linear-gradient(135deg,#ef4444,#8b5cf6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .header h1 { font-size:24px; font-weight:800; letter-spacing:-.4px; margin-bottom:6px; background:linear-gradient(135deg,#f59e0b,#8b5cf6,#06b6d4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
     .header .sub { font-size:12.5px; color:var(--muted); }
     .live-dot { display:inline-flex; align-items:center; gap:6px; margin-top:10px; font-size:11px; color:var(--green); background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.2); padding:4px 12px; border-radius:99px; }
     .live-dot::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 1.6s ease-in-out infinite; }
     @keyframes pulse { 0%,100% {opacity:1} 50% {opacity:.4} }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:14px; }
-    .card-title { font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; margin-bottom:14px; }
+    .card-title { font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .status-tag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:99px; border:1px solid; letter-spacing:.4px; text-transform:none; }
+    .sig-badge { font-size:10px; font-weight:700; padding:2px 10px; border-radius:99px; border:1px solid; letter-spacing:.3px; }
     .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .stat { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
-    .stat .label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px; }
-    .stat .value { font-size:17px; font-weight:800; letter-spacing:-.3px; }
-    .stat .extra { font-size:11px; color:var(--muted); margin-top:3px; }
-    .alert { margin-top:14px; padding:10px 14px; border-radius:8px; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2); font-size:12px; color:var(--amber); line-height:1.5; }
+    .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .stat,.mini-stat { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+    .mini-stat { padding:9px 11px; }
+    .label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:5px; }
+    .value { font-size:17px; font-weight:800; letter-spacing:-.3px; }
+    .mini-stat .value { font-size:14px; }
+    .extra { font-size:11px; color:var(--muted); margin-top:3px; }
+    .alert { padding:10px 14px; border-radius:8px; background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2); font-size:11.5px; color:var(--amber); line-height:1.5; }
+    .pos-live { border:1px solid; border-radius:10px; padding:14px; margin-bottom:0; }
+    table.params { width:100%; border-collapse:collapse; font-size:11.5px; }
+    table.params th { font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--muted); padding:6px 8px; border-bottom:1px solid var(--border); text-align:left; }
+    table.params td { padding:8px 8px; border-bottom:1px solid #0c1526; line-height:1.5; color:var(--text); }
+    table.params tr:last-child td { border-bottom:none; }
+    .section-hdr { font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
     .footer { text-align:center; font-size:11px; color:#334155; margin-top:20px; line-height:1.6; }
     .footer a { color:#475569; text-decoration:none; }
   </style>
@@ -42,100 +51,222 @@
   <div class="wrap">
     <a href="./" class="back">← back</a>
     <div class="header">
-      <div class="emoji">🚀</div>
-      <h1>BTC Futures Bot</h1>
-      <div class="sub">Binance Futures · BTCUSDT · 1h entry, 4h HTF · short-only · v2</div>
-      <div class="live-dot">TESTNET · 2026-05-17 01:29</div>
+      <div style="font-size:36px;margin-bottom:8px;">🚀</div>
+      <h1>Crypto Futures Bot v6</h1>
+      <div class="sub">Binance Futures · BTC / ETH / SOL · 1h entry, 4h HTF · dual-edge + short-only · multi-symbol</div>
+      <div class="live-dot">TESTNET · 2026-05-17 01:49</div>
     </div>
 
-    <!-- Live BTC price (client-side, CoinGecko) -->
+    <!-- Portfolio overview -->
     <div class="card">
-      <div class="card-title">Live BTC Price</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="card-title">Portfolio Overview
+        <span class="status-tag" style="background:rgba(245,158,11,.1);color:var(--amber);border-color:rgba(245,158,11,.3);">TESTNET</span>
+      </div>
+      <div class="grid4">
+        <div class="mini-stat"><div class="label">Balance</div><div class="value">$5,000</div></div>
+        <div class="mini-stat"><div class="label">Equity</div><div class="value">$5,000</div></div>
+        <div class="mini-stat"><div class="label">Open</div><div class="value">0/2</div></div>
+        <div class="mini-stat"><div class="label">Leverage</div><div class="value">2×</div></div>
+        <div class="mini-stat"><div class="label">Closed Trades</div><div class="value">0</div></div>
+        <div class="mini-stat"><div class="label">Win Rate</div><div class="value" style="color:#ef4444">0.0%</div></div>
+        <div class="mini-stat"><div class="label">Net P&amp;L</div><div class="value" style="color:#10b981">+$0.00</div></div>
+        <div class="mini-stat"><div class="label">Today P&amp;L</div><div class="value" style="color:#10b981">+$0.00</div></div>
+      </div>
+    </div>
+
+    
+    <!-- BTCUSDT -->
+    <div class="card" style="border-color:#f59e0b33;">
+      <div class="card-title" style="margin-bottom:10px;">
+        <span style="color:#f59e0b;font-size:13px;">●</span> Bitcoin (BTCUSDT)
+        <span class="status-tag" style="background:#8b5cf618;color:#8b5cf6;border-color:#8b5cf644;">DUAL EDGE</span>
+        <span class="sig-badge" style="background:rgba(100,116,139,.1);color:#64748b;border-color:rgba(100,116,139,.2);">Scanning…</span>
+      </div>
+      <!-- live price row -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;">
         <div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">BTC/USDT · CoinGecko</div>
-          <div id="live-price" style="font-size:26px;font-weight:800;letter-spacing:-.5px;">Loading…</div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">BTC/USDT · CoinGecko live</div>
+          <div id="price-btcusdt" style="font-size:22px;font-weight:800;letter-spacing:-.4px;">Loading…</div>
         </div>
-        <div id="live-change" style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;">—</div>
+        <div id="change-btcusdt" style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:rgba(100,116,139,.1);color:#64748b;">—</div>
       </div>
+      
+      <div class="alert" style="margin-top:0;">
+        <strong>SHORT blocked:</strong> HTF=LONG (need SHORT), no breakdown, ADX falling, body=0.04&lt;0.64×ATR, vol=0.12&lt;1.16×<div style="margin-top:6px;font-size:11px;color:#64748b;"><strong>LONG blocked:</strong> no breakout, ADX=56 (need 40-55), ADX falling, body=0.04&lt;1.5×ATR, vol=0.12&lt;1.2×</div>
+      </div>
+      <div class="grid2" style="margin-top:10px;gap:8px;">
+        <div class="mini-stat"><div class="label">HTF (4h) Dir</div><div class="value" style="color:#10b981">LONG</div></div>
+        <div class="mini-stat"><div class="label">ADX (14) ↓</div><div class="value" style="color:#10b981">56.5</div></div>
+        <div class="mini-stat"><div class="label">RSI (14)</div><div class="value">37.3</div></div>
+        <div class="mini-stat"><div class="label">ATR</div><div class="value">$218.70</div></div>
+        <div class="mini-stat"><div class="label">Body / ATR</div><div class="value" style="color:#ef4444">0.04</div></div>
+        <div class="mini-stat"><div class="label">Vol Ratio</div><div class="value" style="color:#ef4444">0.12×</div></div>
+        <div class="mini-stat"><div class="label">Donchian Hi</div><div class="value" style="color:#10b981">$79,161.00</div></div>
+        <div class="mini-stat"><div class="label">Donchian Lo</div><div class="value" style="color:#ef4444">$77,718.20</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:#475569;line-height:1.5;">5y SHORT: 45t · WR 86.7% · PF 1.97 (5/5 yrs) &nbsp;|&nbsp; 5y LONG: 20t · WR 80.0% · PF 2.13 (4/4 yrs)</div>
     </div>
 
-    
+    <!-- ETHUSDT -->
+    <div class="card" style="border-color:#8b5cf633;">
+      <div class="card-title" style="margin-bottom:10px;">
+        <span style="color:#8b5cf6;font-size:13px;">●</span> Ethereum (ETHUSDT)
+        <span class="status-tag" style="background:#ef444418;color:#ef4444;border-color:#ef444444;">SHORT ONLY</span>
+        <span class="sig-badge" style="background:rgba(100,116,139,.1);color:#64748b;border-color:rgba(100,116,139,.2);">Scanning…</span>
+      </div>
+      <!-- live price row -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">ETH/USDT · CoinGecko live</div>
+          <div id="price-ethusdt" style="font-size:22px;font-weight:800;letter-spacing:-.4px;">Loading…</div>
+        </div>
+        <div id="change-ethusdt" style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:rgba(100,116,139,.1);color:#64748b;">—</div>
+      </div>
+      
+      <div class="alert" style="margin-top:0;">
+        <strong>SHORT blocked:</strong> no breakdown, ADX=56 (need 45-55), body=0.06&lt;0.5×ATR, vol=0.23&lt;1.0×
+      </div>
+      <div class="grid2" style="margin-top:10px;gap:8px;">
+        <div class="mini-stat"><div class="label">HTF (4h) Dir</div><div class="value" style="color:#ef4444">SHORT</div></div>
+        <div class="mini-stat"><div class="label">ADX (14) ↑</div><div class="value" style="color:#f59e0b">56.1</div></div>
+        <div class="mini-stat"><div class="label">RSI (14)</div><div class="value">24.4</div></div>
+        <div class="mini-stat"><div class="label">ATR</div><div class="value">$8.42</div></div>
+        <div class="mini-stat"><div class="label">Body / ATR</div><div class="value" style="color:#ef4444">0.06</div></div>
+        <div class="mini-stat"><div class="label">Vol Ratio</div><div class="value" style="color:#ef4444">0.23×</div></div>
+        <div class="mini-stat"><div class="label">Donchian Hi</div><div class="value" style="color:#10b981">$2,229.92</div></div>
+        <div class="mini-stat"><div class="label">Donchian Lo</div><div class="value" style="color:#ef4444">$2,167.97</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:#475569;line-height:1.5;">5y SHORT: 34t · WR 79.4% · PF 2.17 (4/5 yrs)</div>
+    </div>
+
+    <!-- SOLUSDT -->
+    <div class="card" style="border-color:#06b6d433;">
+      <div class="card-title" style="margin-bottom:10px;">
+        <span style="color:#06b6d4;font-size:13px;">●</span> Solana (SOLUSDT)
+        <span class="status-tag" style="background:#ef444418;color:#ef4444;border-color:#ef444444;">SHORT ONLY</span>
+        <span class="sig-badge" style="background:rgba(100,116,139,.1);color:#64748b;border-color:rgba(100,116,139,.2);">Scanning…</span>
+      </div>
+      <!-- live price row -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">SOL/USDT · CoinGecko live</div>
+          <div id="price-solusdt" style="font-size:22px;font-weight:800;letter-spacing:-.4px;">Loading…</div>
+        </div>
+        <div id="change-solusdt" style="font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:rgba(100,116,139,.1);color:#64748b;">—</div>
+      </div>
+      
+      <div class="alert" style="margin-top:0;">
+        <strong>SHORT blocked:</strong> HTF=LONG (need SHORT), no breakdown, ADX=27 (need 50-55), ADX falling, body=0.25&lt;0.8×ATR, vol=0.14&lt;1.0×
+      </div>
+      <div class="grid2" style="margin-top:10px;gap:8px;">
+        <div class="mini-stat"><div class="label">HTF (4h) Dir</div><div class="value" style="color:#10b981">LONG</div></div>
+        <div class="mini-stat"><div class="label">ADX (14) ↓</div><div class="value" style="color:#ef4444">27.5</div></div>
+        <div class="mini-stat"><div class="label">RSI (14)</div><div class="value">32.3</div></div>
+        <div class="mini-stat"><div class="label">ATR</div><div class="value">$0.72</div></div>
+        <div class="mini-stat"><div class="label">Body / ATR</div><div class="value" style="color:#ef4444">0.25</div></div>
+        <div class="mini-stat"><div class="label">Vol Ratio</div><div class="value" style="color:#ef4444">0.14×</div></div>
+        <div class="mini-stat"><div class="label">Donchian Hi</div><div class="value" style="color:#10b981">$91.00</div></div>
+        <div class="mini-stat"><div class="label">Donchian Lo</div><div class="value" style="color:#ef4444">$85.63</div></div>
+      </div>
+      <div style="margin-top:10px;font-size:10.5px;color:#475569;line-height:1.5;">5y SHORT: 14t · WR 71.4% · PF 1.52 (3/4 yrs)</div>
+    </div>
+
+
+    <!-- Strategy params -->
+    <div class="card" style="border-color:rgba(99,102,241,.3);">
+      <div class="card-title">🎯 Strategy v6 — Parameters
+        <span class="status-tag" style="background:rgba(16,185,129,.1);color:#10b981;border-color:rgba(16,185,129,.3);">5y backtest-validated</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">
+        Donchian channel breakout on <strong style="color:var(--text)">1h</strong> with <strong style="color:var(--text)">4h</strong> EMA50/200 trend gate.
+        Filters: ADX range + rising · body size in ATR units · volume vs 20-bar MA.
+        Exits: fixed ATR stop-loss · take-profit · scale-out 50% at 1×ATR · Chandelier trailing from 1.5×ATR.
+        Adaptive re-tune every 7 days on a 6-month rolling window (blended 80% anchor / 20% recent).
+      </div>
+      <table class="params">
+        <thead><tr><th>Symbol</th><th>SHORT edge</th><th>LONG edge</th></tr></thead>
+        <tbody><tr>
+      <td style="color:#f59e0b;font-weight:700;">BTCUSDT</td>
+      <td>ADX 44-68 · body≥0.64×ATR · vol≥1.16× · SL 1.9× TP 4.0×</td>
+      <td>ADX 40-55 · body≥1.5×ATR · vol≥1.2× · SL 2.0× TP 6.0×</td>
+    </tr>
+<tr>
+      <td style="color:#8b5cf6;font-weight:700;">ETHUSDT</td>
+      <td>ADX 45-55 · body≥0.5×ATR · vol≥1.0× · SL 1.5× TP 3.0×</td>
+      <td>—</td>
+    </tr>
+<tr>
+      <td style="color:#06b6d4;font-weight:700;">SOLUSDT</td>
+      <td>ADX 50-55 · body≥0.8×ATR · vol≥1.0× · SL 2.0× TP 4.0×</td>
+      <td>—</td>
+    </tr></tbody>
+      </table>
+    </div>
+
+    <!-- 5y backtest summary -->
     <div class="card">
-      <div class="card-title">Position Status</div>
-      <div style="display:flex;align-items:center;gap:14px;padding:8px 4px;">
-        <div style="font-size:32px;">⏳</div>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;margin-bottom:3px;">Scanning for SHORT entry</div>
-          <div style="font-size:12px;color:var(--muted);">No open position. Bot is short-only (v2 backtest config).</div>
-        </div>
-      </div>
-      <div class="alert"><strong>Blocked by:</strong> HTF dir=LONG (need SHORT), no breakdown (price above Donchian low), body=0.17&lt;0.64xATR, vol=0.18&lt;1.16xMA</div>
+      <div class="card-title">📊 5-Year Backtest Results</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:12px;">1,728+ parameter configs swept per symbol · 1H entry + 4H HTF · 2020-2025</div>
+      <table class="params">
+        <thead><tr><th>Symbol</th><th>Edge</th><th>Trades</th><th>Win Rate</th><th>Profit Factor</th><th>Profitable Yrs</th></tr></thead>
+        <tbody><tr>
+          <td style="color:#f59e0b;font-weight:700;">BTCUSDT</td>
+          <td><span style="color:#ef4444">SHORT</span></td>
+          <td>45</td>
+          <td style="color:#10b981">86.7%</td>
+          <td style="color:#10b981">1.97</td>
+          <td>5/5</td>
+        </tr><tr>
+          <td style="color:#f59e0b;font-weight:700;">BTCUSDT</td>
+          <td><span style="color:#10b981">LONG</span></td>
+          <td>20</td>
+          <td style="color:#10b981">80.0%</td>
+          <td style="color:#10b981">2.13</td>
+          <td>4/4</td>
+        </tr><tr>
+          <td style="color:#8b5cf6;font-weight:700;">ETHUSDT</td>
+          <td><span style="color:#ef4444">SHORT</span></td>
+          <td>34</td>
+          <td style="color:#10b981">79.4%</td>
+          <td style="color:#10b981">2.17</td>
+          <td>4/5</td>
+        </tr><tr>
+          <td style="color:#06b6d4;font-weight:700;">SOLUSDT</td>
+          <td><span style="color:#ef4444">SHORT</span></td>
+          <td>14</td>
+          <td style="color:#10b981">71.4%</td>
+          <td style="color:#10b981">1.52</td>
+          <td>3/4</td>
+        </tr></tbody>
+      </table>
     </div>
-    
-    
-<div class="card">
-  <div class="card-title">Live Indicators <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">· 2026-05-17 01:29</span></div>
-  <div class="grid2">
-    <div class="stat"><div class="label">Price</div><div class="value">$78,243</div></div>
-    <div class="stat"><div class="label">HTF (4h) Direction</div><div class="value" style="color:#10b981">LONG</div></div>
-    <div class="stat"><div class="label">ADX (14) ↑</div><div class="value" style="color:#10b981">57.2</div><div class="extra">in range</div></div>
-    <div class="stat"><div class="label">RSI (14)</div><div class="value">29.3</div></div>
-    <div class="stat"><div class="label">Donchian Low (20)</div><div class="value" style="color:#ef4444">$77,718</div><div class="extra">break this to short</div></div>
-    <div class="stat"><div class="label">Body / ATR</div><div class="value" style="color:#ef4444">0.17</div></div>
-    <div class="stat"><div class="label">Volume Ratio</div><div class="value" style="color:#ef4444">0.18×</div></div>
-    <div class="stat"><div class="label">ATR</div><div class="value">$246</div></div>
-  </div>
-</div>
-
-    
-<div class="card" style="border-color:rgba(99,102,241,.3);">
-  <div class="card-title">🎯 Strategy V2 <span class="status-tag" style="background:rgba(16,185,129,.1);color:#10b981;border-color:rgba(16,185,129,.3);">backtest-validated</span></div>
-  <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
-    Short-only Donchian breakdown on 1h entry, 4h HTF trend. Strict ADX gate.<br/>
-    <strong style="color:var(--text)">5y backtest:</strong> 25 trades · WR 96% · PF 3.03 · MaxDD 3.23% · 6/6 years profitable
-  </div>
-  <div class="grid2">
-    <div class="stat"><div class="label">ADX Range</div><div class="value" style="font-size:14px;">44-68</div></div>
-    <div class="stat"><div class="label">Body ≥</div><div class="value" style="font-size:14px;">0.64× ATR</div></div>
-    <div class="stat"><div class="label">Volume ≥</div><div class="value" style="font-size:14px;">1.16× MA20</div></div>
-    <div class="stat"><div class="label">R:R</div><div class="value" style="font-size:14px;">1:2.1 (SL 1.9× / TP 4.0×)</div></div>
-  </div>
-</div>
-
-    
-<div class="card">
-  <div class="card-title">All-Time Stats <span class="status-tag" style="background:rgba(245,158,11,.1);color:var(--amber);border-color:rgba(245,158,11,.3);">TESTNET</span></div>
-  <div class="grid2">
-    <div class="stat"><div class="label">Equity</div><div class="value">$5,000.00</div></div>
-    <div class="stat"><div class="label">Balance</div><div class="value">$5,000.00</div></div>
-    <div class="stat"><div class="label">Closed Trades</div><div class="value">0</div></div>
-    <div class="stat"><div class="label">Win Rate</div><div class="value" style="color:#ef4444">0.0%</div></div>
-    <div class="stat"><div class="label">Net P&L</div><div class="value" style="color:#10b981">+$0.00</div></div>
-    <div class="stat"><div class="label">Leverage</div><div class="value">2x</div></div>
-  </div>
-</div>
-
 
     <div class="footer">
-      Generated 17 May 2026, 01:30 IST · Binance Futures testnet<br/>
+      Generated 17 May 2026, 01:50 IST · Binance Futures testnet<br/>
       Auto-refreshes every 10 min · <a href="https://github.com/Saurishg" target="_blank" rel="noopener">github.com/Saurishg</a>
     </div>
   </div>
   <script>
-    async function fetchPrice() {
+    const SYM_MAP = {"bitcoin": "btcusdt", "ethereum": "ethusdt", "solana": "solusdt"};
+    async function fetchPrices() {
       try {
-        const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true');
         const d = await r.json();
-        const p = d.bitcoin.usd, c = d.bitcoin.usd_24h_change;
-        document.getElementById('live-price').textContent = '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        const ch = document.getElementById('live-change');
-        ch.textContent = (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
-        ch.style.background = c >= 0 ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)';
-        ch.style.color = c >= 0 ? '#10b981' : '#ef4444';
-      } catch(e) { document.getElementById('live-price').textContent = '—'; }
+        for (const [cgId, symLower] of Object.entries(SYM_MAP)) {
+          if (!d[cgId]) continue;
+          const p = d[cgId].usd, c = d[cgId].usd_24h_change;
+          const priceEl = document.getElementById('price-' + symLower);
+          const changeEl = document.getElementById('change-' + symLower);
+          if (priceEl) priceEl.textContent = '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+          if (changeEl) {
+            changeEl.textContent = (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
+            changeEl.style.background = c >= 0 ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)';
+            changeEl.style.color = c >= 0 ? '#10b981' : '#ef4444';
+          }
+        }
+      } catch(e) { console.warn('CoinGecko fetch failed', e); }
     }
-    fetchPrice(); setInterval(fetchPrice, 30000);
+    fetchPrices(); setInterval(fetchPrices, 30000);
   </script>
 </body>
 </html>
