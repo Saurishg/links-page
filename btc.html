@@ -89,7 +89,7 @@
       <div class="emoji">🪙</div>
       <h1>BTC Trading Bot</h1>
       <div class="sub">Binance Demo · EMA + RSI + MACD + ATR + News sentiment · 5 min cycle</div>
-      <div class="live-dot  alive">Bot online · 16 May 2026, 15:35 IST</div>
+      <div class="live-dot  alive">Bot online · 16 May 2026, 15:39 IST</div>
     </div>
 
     <!-- Live price (CoinGecko, client-side) -->
@@ -107,25 +107,73 @@
 
     
 <div class="card">
-  <div class="card-title">Live Indicators <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">· last cycle 2026-05-16 15:31</span></div>
+  <div class="card-title">Bot Indicators <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">· last cycle 2026-05-16 15:37</span></div>
   <div class="grid2">
     <div class="stat">
-      <div class="label">Bot Price</div>
-      <div class="value">$77,994.08</div>
+      <div class="label">Bot Price (4h)</div>
+      <div class="value">$77,945.18</div>
     </div>
     <div class="stat">
       <div class="label">RSI (14)</div>
-      <div class="value" style="color:#64748b">42.2</div>
+      <div class="value" style="color:#64748b">41.9</div>
       <div class="extra">Neutral</div>
     </div>
     <div class="stat">
       <div class="label">MACD</div>
       <div class="value" style="color:#ef4444">▼ Bearish</div>
+      <div class="extra">Histogram: -236.70</div>
+    </div>
+    <div class="stat">
+      <div class="label">EMA Trend (21/55/200)</div>
+      <div class="value" style="color:#f59e0b;font-size:14px;">Short-term down</div>
+      <div class="extra">+0.35% vs EMA200</div>
+    </div>
+    <div class="stat">
+      <div class="label">ATR Volatility</div>
+      <div class="value" style="color:#f59e0b">$873.63</div>
+      <div class="extra">1.12% · Normal</div>
     </div>
     <div class="stat">
       <div class="label">News Sentiment</div>
       <div class="value" style="color:#ef4444">Bearish</div>
       <div class="extra">-0.70</div>
+    </div>
+  </div>
+</div>
+
+<!-- Market-wide indicators (client-side fetched) -->
+<div class="card">
+  <div class="card-title">Market Pulse <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0;">· live · external APIs</span></div>
+  <div class="grid2">
+    <div class="stat">
+      <div class="label">Fear &amp; Greed</div>
+      <div class="value" id="fng-value">—</div>
+      <div class="extra" id="fng-label">Loading…</div>
+    </div>
+    <div class="stat">
+      <div class="label">BTC Dominance</div>
+      <div class="value" id="btc-dom">—</div>
+      <div class="extra" id="btc-dom-trend">CoinGecko global</div>
+    </div>
+    <div class="stat">
+      <div class="label">24h Volume</div>
+      <div class="value" id="btc-vol">—</div>
+      <div class="extra">BTC traded last 24h</div>
+    </div>
+    <div class="stat">
+      <div class="label">24h High / Low</div>
+      <div class="value" id="btc-hilo" style="font-size:13px;">—</div>
+      <div class="extra" id="btc-range">Range %</div>
+    </div>
+    <div class="stat">
+      <div class="label">Funding Rate (Perps)</div>
+      <div class="value" id="funding">—</div>
+      <div class="extra" id="funding-label">Binance · 8h interval</div>
+    </div>
+    <div class="stat">
+      <div class="label">Long / Short Ratio</div>
+      <div class="value" id="ls-ratio">—</div>
+      <div class="extra" id="ls-label">Top traders · Binance</div>
     </div>
   </div>
 </div>
@@ -171,7 +219,7 @@
     
 
     <div class="footer">
-      Generated 16 May 2026, 15:35 IST · Demo mode (no real money)<br/>
+      Generated 16 May 2026, 15:39 IST · Demo mode (no real money)<br/>
       Bot logs to PM2 every 5 min · Status auto-refreshes every 10 min<br/>
       <a href="https://github.com/Saurishg" target="_blank" rel="noopener">github.com/Saurishg</a>
     </div>
@@ -179,23 +227,115 @@
   </div>
 
   <script>
+    const fmtUsd = n => '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const fmtCompact = n => {
+      if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+      if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+      if (n >= 1e3) return '$' + (n/1e3).toFixed(2) + 'K';
+      return '$' + n.toFixed(2);
+    };
+
     async function fetchPrice() {
       try {
-        const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        const r = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false');
         const d = await r.json();
-        const p = d.bitcoin.usd;
-        const c = d.bitcoin.usd_24h_change;
-        document.getElementById('live-price').textContent = '$' + p.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const m = d.market_data;
+        const p = m.current_price.usd;
+        const c = m.price_change_percentage_24h;
+        document.getElementById('live-price').textContent = fmtUsd(p);
         const ch = document.getElementById('live-change');
         ch.textContent = (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
         ch.style.background = c >= 0 ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)';
         ch.style.color = c >= 0 ? '#10b981' : '#ef4444';
+
+        // 24h volume + high/low
+        document.getElementById('btc-vol').textContent = fmtCompact(m.total_volume.usd);
+        const hi = m.high_24h.usd, lo = m.low_24h.usd;
+        document.getElementById('btc-hilo').innerHTML =
+          '<span style="color:#10b981">' + fmtUsd(hi) + '</span><br/><span style="color:#ef4444">' + fmtUsd(lo) + '</span>';
+        document.getElementById('btc-range').textContent =
+          'Range: ' + (((hi - lo) / lo) * 100).toFixed(2) + '%';
       } catch(e) {
         document.getElementById('live-price').textContent = '—';
       }
     }
-    fetchPrice();
-    setInterval(fetchPrice, 30000);
+
+    async function fetchFearGreed() {
+      try {
+        const r = await fetch('https://api.alternative.me/fng/?limit=1');
+        const d = await r.json();
+        const v = parseInt(d.data[0].value);
+        const cls = d.data[0].value_classification;
+        let color = '#64748b';
+        if (v < 25) color = '#ef4444';        // extreme fear
+        else if (v < 45) color = '#f59e0b';   // fear
+        else if (v < 55) color = '#facc15';   // neutral
+        else if (v < 75) color = '#84cc16';   // greed
+        else color = '#10b981';               // extreme greed
+        const el = document.getElementById('fng-value');
+        el.textContent = v;
+        el.style.color = color;
+        document.getElementById('fng-label').textContent = cls + ' · 0-100 scale';
+      } catch(e) {
+        document.getElementById('fng-value').textContent = '—';
+      }
+    }
+
+    async function fetchBtcDominance() {
+      try {
+        const r = await fetch('https://api.coingecko.com/api/v3/global');
+        const d = await r.json();
+        const dom = d.data.market_cap_percentage.btc;
+        const ch = d.data.market_cap_change_percentage_24h_usd;
+        const el = document.getElementById('btc-dom');
+        el.textContent = dom.toFixed(2) + '%';
+        document.getElementById('btc-dom-trend').textContent = 'Total cap 24h: ' + (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%';
+      } catch(e) {
+        document.getElementById('btc-dom').textContent = '—';
+      }
+    }
+
+    async function fetchFunding() {
+      try {
+        const r = await fetch('https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT');
+        const d = await r.json();
+        const rate = parseFloat(d.lastFundingRate) * 100;
+        const annual = rate * 3 * 365; // 8h funding * 3/day * 365
+        const el = document.getElementById('funding');
+        el.textContent = (rate >= 0 ? '+' : '') + rate.toFixed(4) + '%';
+        el.style.color = rate >= 0 ? '#10b981' : '#ef4444';
+        document.getElementById('funding-label').textContent =
+          'Annualised: ' + (annual >= 0 ? '+' : '') + annual.toFixed(1) + '% · ' + (rate >= 0 ? 'Longs pay' : 'Shorts pay');
+      } catch(e) {
+        document.getElementById('funding').textContent = '—';
+      }
+    }
+
+    async function fetchLongShort() {
+      try {
+        const r = await fetch('https://fapi.binance.com/futures/data/topLongShortAccountRatio?symbol=BTCUSDT&period=1h&limit=1');
+        const d = await r.json();
+        if (d && d.length) {
+          const ratio = parseFloat(d[0].longShortRatio);
+          const longPct = parseFloat(d[0].longAccount) * 100;
+          const shortPct = parseFloat(d[0].shortAccount) * 100;
+          const el = document.getElementById('ls-ratio');
+          el.textContent = ratio.toFixed(2);
+          el.style.color = ratio > 1 ? '#10b981' : '#ef4444';
+          document.getElementById('ls-label').textContent =
+            longPct.toFixed(1) + '% L · ' + shortPct.toFixed(1) + '% S';
+        }
+      } catch(e) {
+        document.getElementById('ls-ratio').textContent = '—';
+      }
+    }
+
+    function refreshAll() {
+      fetchPrice(); fetchFearGreed(); fetchBtcDominance();
+      fetchFunding(); fetchLongShort();
+    }
+    refreshAll();
+    setInterval(refreshAll, 30000);
   </script>
 </body>
 </html>
