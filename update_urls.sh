@@ -5,6 +5,10 @@
 
 set -e
 
+# Prevent concurrent runs from corrupting the git repo
+exec 200>/tmp/links-page-update.lock
+flock -n 200 || { echo "Another update already running — skipping"; exit 0; }
+
 REPO=/home/work/links-page
 HTML=$REPO/index.html
 
