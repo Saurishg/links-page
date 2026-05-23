@@ -2,6 +2,9 @@
 # Auto-update links-page index.html with current Cloudflare tunnel URLs.
 # Uses data-tunnel="<name>" attributes on <a> tags for reliable replacement.
 # Called automatically by start_tunnel.sh after tunnels come up.
+#
+# To add a new tunnel: just add its name to the TUNNELS list below.
+# Each name N expects /tmp/cf_url_N to contain the live URL (or be missing/empty).
 
 set -e
 
@@ -12,54 +15,60 @@ flock -n 200 || { echo "Another update already running — skipping"; exit 0; }
 REPO=/home/work/links-page
 HTML=$REPO/index.html
 
-CHAT=$(cat /tmp/cf_url_chat 2>/dev/null || echo "")
-COMFY=$(cat /tmp/cf_url_comfyui 2>/dev/null || echo "")
-DASH=$(cat /tmp/cf_url_dashboard 2>/dev/null || echo "")
-GRAFANA=$(cat /tmp/cf_url_grafana 2>/dev/null || echo "")
-OBSIDIAN=$(cat /tmp/cf_url_obsidian 2>/dev/null || echo "")
-IPMI=$(cat /tmp/cf_url_ipmi 2>/dev/null || echo "")
+# Tunnels we know about. Add new tunnel names here — no other code changes needed.
+TUNNELS=(chat comfyui dashboard grafana obsidian ipmi atinus)
 
-if [ -z "$CHAT" ] && [ -z "$COMFY" ] && [ -z "$DASH" ] && [ -z "$GRAFANA" ] && [ -z "$OBSIDIAN" ] && [ -z "$IPMI" ]; then
+# Build "name=url" pairs for each tunnel that has a URL on disk
+PAIRS=()
+ANY=0
+for name in "${TUNNELS[@]}"; do
+  url=$(cat "/tmp/cf_url_${name}" 2>/dev/null || echo "")
+  if [ -n "$url" ]; then
+    PAIRS+=("${name}=${url}")
+    ANY=1
+  fi
+done
+
+if [ "$ANY" -eq 0 ]; then
   echo "No tunnel URLs found — skipping update"
   exit 0
 fi
 
-cd $REPO
+cd "$REPO"
 
-python3 - "$HTML" "$CHAT" "$COMFY" "$DASH" "$GRAFANA" "$OBSIDIAN" "$IPMI" <<'PY'
+python3 - "$HTML" "${PAIRS[@]}" <<'PY'
 import sys, re
 
 path = sys.argv[1]
-urls = {
-    'chat':      sys.argv[2],
-    'comfyui':   sys.argv[3],
-    'dashboard': sys.argv[4],
-    'grafana':   sys.argv[5],
-    'obsidian':  sys.argv[6],
-    'ipmi':      sys.argv[7],
-}
+urls = dict(p.split('=', 1) for p in sys.argv[2:])
 
 content = open(path).read()
 
-# For each data-tunnel anchor, replace the href URL
+# For each data-tunnel anchor, replace the href URL.
+# Supports both attribute orders (data-tunnel before href, or after).
 def replace_tunnel(content, tunnel_name, new_url):
     if not new_url:
-        return content
-    # Match the anchor tag with this data-tunnel value and replace its href
-    pattern = r'(<a\s[^>]*data-tunnel="' + tunnel_name + r'"[^>]*href=")https://[a-z0-9\-]+\.trycloudflare\.com(")'
-    alt_pattern = r'(<a\s[^>]*href=")https://[a-z0-9\-]+\.trycloudflare\.com("[^>]*data-tunnel="' + tunnel_name + r'")'
-    new, n = re.subn(pattern, r'\g<1>' + new_url + r'\g<2>', content)
+        return content, 0
+    pat_a = (r'(<a\s[^>]*data-tunnel="' + re.escape(tunnel_name) +
+             r'"[^>]*href=")https://[a-z0-9\-]+\.trycloudflare\.com(")')
+    pat_b = (r'(<a\s[^>]*href=")https://[a-z0-9\-]+\.trycloudflare\.com'
+             r'("[^>]*data-tunnel="' + re.escape(tunnel_name) + r'")')
+    new, n = re.subn(pat_a, r'\g<1>' + new_url + r'\g<2>', content)
     if n == 0:
-        new, n = re.subn(alt_pattern, r'\g<1>' + new_url + r'\g<2>', content)
-    if n > 0:
-        old = re.search(r'https://[a-z0-9\-]+\.trycloudflare\.com', content)
-        print(f"  [{tunnel_name}] → {new_url}")
-    return new
+        new, n = re.subn(pat_b, r'\g<1>' + new_url + r'\g<2>', content)
+    return new, n
 
+changed = 0
 for name, url in urls.items():
-    content = replace_tunnel(content, name, url)
+    content, n = replace_tunnel(content, name, url)
+    if n > 0:
+        print(f"  [{name}] → {url}")
+        changed += n
+    else:
+        print(f"  [{name}] (no anchor with data-tunnel='{name}' — skipped)", file=sys.stderr)
 
 open(path, 'w').write(content)
+print(f"✓ {changed} URL replacement(s) applied")
 PY
 
 # Commit + push only if file changed
