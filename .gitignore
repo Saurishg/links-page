@@ -1,0 +1,6 @@
+# Local-only artifacts
+update.log
+btc_update.log
+btc_futures_update.log
+agentdb.rvf
+agentdb.rvf.lock
