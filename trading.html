@@ -25,39 +25,75 @@
         radial-gradient(ellipse 60% 40% at 20% 10%, rgba(247,147,26,.08) 0%, transparent 60%),
         radial-gradient(ellipse 50% 35% at 80% 80%, rgba(99,102,241,.08) 0%, transparent 55%);
     }
-    .wrap { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
-    .top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+    .wrap { position: relative; z-index: 1; max-width: 920px; margin: 0 auto; }
+    .top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
     .title { font-size: 22px; font-weight: 800; letter-spacing: -.4px; }
     .title .btc { color: var(--btc); }
-    .meta { font-size: 12px; color: var(--muted); text-align: right; line-height: 1.6; }
-    .meta .price { font-size: 16px; font-weight: 700; color: var(--text); }
+    .meta { font-size: 12px; color: var(--muted); text-align: right; line-height: 1.55; }
+    .meta .price { font-size: 18px; font-weight: 700; color: var(--text); }
+    .meta .chg { font-weight: 600; }
     .badge {
       display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .5px;
       padding: 3px 9px; border-radius: 99px; vertical-align: middle; margin-left: 8px;
       color: var(--btc); background: rgba(247,147,26,.12); border: 1px solid rgba(247,147,26,.25);
     }
+    .bias-chip { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 99px; letter-spacing: .5px; }
+    .bias-bear    { color: var(--red);   background: rgba(239,68,68,.12);  border: 1px solid rgba(239,68,68,.3); }
+    .bias-bull    { color: var(--green); background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.3); }
+    .bias-neutral { color: var(--muted); background: var(--card2);         border: 1px solid var(--border); }
     .back { font-size: 12.5px; color: var(--muted); text-decoration: none; }
     .back:hover { color: var(--text); }
 
-    .bot { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 18px; }
-    .bot-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-    .bot-name { font-size: 15px; font-weight: 700; }
-    .bot-sub { font-size: 11.5px; color: var(--muted); }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; margin-bottom: 14px; }
     .stat { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
     .stat .k { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
     .stat .v { font-size: 16px; font-weight: 700; }
+    .stat .s { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
     .pos { color: var(--green); } .neg { color: var(--red); }
-    .chart-box { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 10px; height: 180px; margin-bottom: 14px; }
-    .openpos { font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+
+    .sec-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+    .sec-sub { font-size: 11px; color: var(--muted); font-weight: 400; }
+    .mkt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 10px; }
+    .trigger { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.7; }
+    .trigger b { color: var(--text); }
+
+    .chart-lg { height: 260px; margin-top: 8px; }
+    .chart-md { height: 170px; }
+    .chart-sm { height: 110px; }
+
+    .bot-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .bot-name { font-size: 15px; font-weight: 700; }
+    .bot-sub { font-size: 11.5px; color: var(--muted); }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .openpos { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
     .openpos b { color: var(--text); }
-    details.params { margin: 8px 0 12px; }
+
+    .risk { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .rbar { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; }
+    .rbar .k { font-size: 10px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+    .rbar .track { height: 5px; background: rgba(28,42,71,.8); border-radius: 99px; margin-top: 7px; overflow: hidden; }
+    .rbar .fill { height: 100%; border-radius: 99px; background: var(--green); transition: width .4s; }
+    .rbar .fill.warn { background: var(--btc); }
+    .rbar .fill.hot { background: var(--red); }
+
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 640px) { .split { grid-template-columns: 1fr; } }
+    .panel { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .panel .ph { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+
+    .ranges { display: flex; gap: 6px; }
+    .ranges button {
+      font: inherit; font-size: 10.5px; font-weight: 600; color: var(--muted);
+      background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 3px 10px; cursor: pointer;
+    }
+    .ranges button.on { color: var(--text); border-color: var(--indigo); }
+
+    details.params { margin: 4px 0 10px; }
     details.params summary { font-size: 11px; color: var(--muted); cursor: pointer; user-select: none; }
     .param-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .chip {
-      font-size: 10.5px; color: var(--muted); background: var(--card2);
-      border: 1px solid var(--border); border-radius: 99px; padding: 3px 9px;
-    }
+    .chip { font-size: 10.5px; color: var(--muted); background: var(--card2); border: 1px solid var(--border); border-radius: 99px; padding: 3px 9px; }
     .chip b { color: var(--text); font-weight: 600; }
 
     table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -65,7 +101,7 @@
     td { padding: 6px 8px; border-bottom: 1px solid rgba(28,42,71,.5); white-space: nowrap; }
     .side-long  { color: var(--green); font-weight: 600; }
     .side-short { color: var(--red); font-weight: 600; }
-    .empty { color: var(--muted); font-size: 12.5px; padding: 14px 4px; }
+    .empty { color: var(--muted); font-size: 12.5px; padding: 12px 4px; }
     .footer { text-align: center; font-size: 11px; color: #334155; margin-top: 26px; line-height: 1.7; }
     .footer a { color: #475569; text-decoration: none; }
     .tablewrap { overflow-x: auto; }
@@ -81,14 +117,28 @@
       </div>
       <div class="meta">
         <div class="price" id="btcPrice">—</div>
+        <div><span class="chg" id="btcChg"></span> <span id="liveTag">live · Binance</span></div>
         <div id="updated">loading…</div>
       </div>
+    </div>
+
+    <div class="strip" id="summary"></div>
+
+    <div class="card" id="marketCard" style="display:none">
+      <div class="sec-title">Market scenario <span class="sec-sub">what the bots see (refreshed every 5 min)</span></div>
+      <div class="mkt-grid" id="mktGrid"></div>
+      <div class="trigger" id="mktTrigger"></div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title">BTC price · 7d <span class="sec-sub">▲ long entry · ▼ short entry · ✕ exit</span></div>
+      <div class="chart-lg"><canvas id="priceChart"></canvas></div>
     </div>
 
     <div id="bots"></div>
 
     <div class="footer">
-      Paper trading on live Binance USDT-M perpetual prices · data refreshes every 5 min<br/>
+      Paper trading on live Binance USDT-M perpetual prices · stats refresh every 5 min · price live<br/>
       <a href="https://github.com/Saurishg" target="_blank" rel="noopener">github.com/Saurishg</a>
     </div>
   </div>
@@ -99,6 +149,8 @@
       hft:   { name: '⚡ HFT Scalper', sub: '1m micro-momentum · daily bias + ADX≥25 · 120m Donchian break · 2×ATR SL / 4×ATR TP' },
     };
     const charts = {};
+    let DATA = null, KLINES = null;
+    const ranges = { swing: 'all', hft: 'all' };
 
     const fmt = (n, d = 2) => n == null ? '—' : n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
     const pnlCls = n => n > 0 ? 'pos' : n < 0 ? 'neg' : '';
@@ -110,93 +162,259 @@
       if (s < 5400) return Math.round(s / 60) + 'm ago';
       return Math.round(s / 3600) + 'h ago';
     };
+    const dur = s => s < 90 ? s + 's' : s < 5400 ? Math.round(s / 60) + 'm' : Math.round(s / 3600) + 'h';
+    const tsTick = v => new Date(v * 1000).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const baseOpts = () => ({
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'nearest' } },
+    });
+
+    // ── live price (client-side, Binance public REST is CORS-open) ──
+    async function tick() {
+      try {
+        const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+        const d = await r.json();
+        const px = parseFloat(d.lastPrice), chg = parseFloat(d.priceChangePercent);
+        document.getElementById('btcPrice').textContent = '$' + fmt(px, 1);
+        const el = document.getElementById('btcChg');
+        el.textContent = sign(chg) + fmt(chg, 2) + '% 24h';
+        el.className = 'chg ' + pnlCls(chg);
+      } catch (e) { document.getElementById('liveTag').textContent = 'price offline'; }
+    }
+
+    async function loadKlines() {
+      try {
+        const r = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=672');
+        KLINES = (await r.json()).map(k => ({ x: k[0] / 1000, y: parseFloat(k[4]) }));
+        drawPrice();
+      } catch (e) { /* chart stays empty */ }
+    }
+
+    function tradeMarkers() {
+      const entries = { long: [], short: [] }, exits = [];
+      if (!DATA) return { entries, exits };
+      const cutoff = Date.now() / 1000 - 7 * 86400;
+      for (const b of Object.values(DATA.bots)) {
+        for (const t of b.last_trades || []) {
+          if (t.entry_ts > cutoff) entries[t.side].push({ x: t.entry_ts, y: t.entry_px });
+          if (t.exit_ts > cutoff) exits.push({ x: t.exit_ts, y: t.exit_px, pnl: t.pnl });
+        }
+        const p = b.open_position;
+        if (p && p.entry_ts > cutoff) entries[p.side].push({ x: p.entry_ts, y: p.entry });
+      }
+      return { entries, exits };
+    }
+
+    function drawPrice() {
+      if (!KLINES) return;
+      const m = tradeMarkers();
+      if (charts.price) charts.price.destroy();
+      charts.price = new Chart(document.getElementById('priceChart'), {
+        data: {
+          datasets: [
+            { type: 'line', data: KLINES, borderColor: '#f7931a', borderWidth: 1.2, pointRadius: 0, tension: 0, parsing: false, order: 10 },
+            { type: 'scatter', data: m.entries.long, pointStyle: 'triangle', radius: 6, backgroundColor: '#10b981', borderColor: '#10b981', order: 1 },
+            { type: 'scatter', data: m.entries.short, pointStyle: 'triangle', rotation: 180, radius: 6, backgroundColor: '#ef4444', borderColor: '#ef4444', order: 1 },
+            { type: 'scatter', data: m.exits, pointStyle: 'crossRot', radius: 5, borderColor: '#a5b4fc', borderWidth: 2, order: 1 },
+          ]
+        },
+        options: {
+          ...baseOpts(),
+          plugins: { legend: { display: false }, tooltip: { callbacks: {
+            label: c => c.dataset.type === 'scatter'
+              ? (c.raw.pnl !== undefined ? `exit $${fmt(c.raw.y, 1)} (pnl ${sign(c.raw.pnl)}$${fmt(Math.abs(c.raw.pnl))})` : `entry $${fmt(c.raw.y, 1)}`)
+              : '$' + fmt(c.raw.y, 1)
+          } } },
+          scales: {
+            x: { type: 'linear', ticks: { color: '#64748b', font: { size: 10 }, maxTicksLimit: 7, callback: tsTick }, grid: { color: 'rgba(28,42,71,.3)' } },
+            y: { ticks: { color: '#64748b', font: { size: 10 }, callback: v => '$' + (v / 1000).toFixed(1) + 'k' }, grid: { color: 'rgba(28,42,71,.4)' } }
+          }
+        }
+      });
+    }
+
+    // ── market scenario ──
+    function renderMarket(mkt) {
+      if (!mkt) return;
+      document.getElementById('marketCard').style.display = '';
+      const px = mkt.price;
+      const stat = (k, v, s) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+      const biasChip = `<span class="bias-chip bias-${mkt.bias}">${mkt.bias.toUpperCase()}</span>`;
+      document.getElementById('mktGrid').innerHTML =
+        stat('Daily bias', biasChip) +
+        stat('Daily ADX', fmt(mkt.daily_adx, 1), mkt.daily_adx >= mkt.min_daily_adx ? 'trend gate OPEN' : `gate closed (&lt;${mkt.min_daily_adx})`) +
+        stat('Daily RSI', fmt(mkt.daily_rsi, 0)) +
+        stat('vs EMA200', `<span class="${pnlCls(mkt.ema200_dist_pct)}">${sign(mkt.ema200_dist_pct)}${fmt(mkt.ema200_dist_pct, 1)}%</span>`) +
+        stat(`${mkt.donchian_days}d low`, '$' + fmt(mkt.don_low, 0), `${fmt(100 * (mkt.don_low / px - 1), 1)}% away`) +
+        stat(`${mkt.donchian_days}d high`, '$' + fmt(mkt.don_high, 0), `+${fmt(100 * (mkt.don_high / px - 1), 1)}%`) +
+        stat('1h ATR', '$' + fmt(mkt.atr_1h, 0), fmt(100 * mkt.atr_1h / px, 2) + '% of px');
+      const gate = mkt.daily_adx >= mkt.min_daily_adx;
+      let trig;
+      if (!gate) trig = `Daily ADX ${fmt(mkt.daily_adx, 1)} &lt; ${mkt.min_daily_adx} — trend gate closed, both bots stand aside.`;
+      else if (mkt.bias === 'bear') trig = `Bias <b>bear</b> + gate open → swing bot <b>shorts a 1h close below $${fmt(mkt.don_low, 0)}</b>; HFT bot shorts 1m closes below its rolling 120-minute low.`;
+      else if (mkt.bias === 'bull') trig = `Bias <b>bull</b> + gate open → swing bot <b>longs a 1h close above $${fmt(mkt.don_high, 0)}</b>; HFT bot longs 1m closes above its rolling 120-minute high.`;
+      else trig = 'Bias neutral — both bots stand aside until the daily trend resolves.';
+      document.getElementById('mktTrigger').innerHTML = '⏳ ' + trig;
+    }
+
+    // ── per-bot card ──
+    function riskBar(label, used, cap, suffix) {
+      const pct = cap > 0 ? Math.min(100, 100 * used / cap) : 0;
+      const cls = pct >= 90 ? 'hot' : pct >= 60 ? 'warn' : '';
+      return `<div class="rbar"><div class="k"><span>${label}</span><span>${suffix}</span></div>
+        <div class="track"><div class="fill ${cls}" style="width:${pct}%"></div></div></div>`;
+    }
 
     function botCard(key, b) {
       const m = BOT_META[key] || { name: key, sub: '' };
       const p = b.open_position;
       const posLine = p
-        ? `<div class="openpos">open: <b class="side-${p.side}">${p.side.toUpperCase()}</b> <b>${fmt(p.qty, 5)}</b> @ <b>$${fmt(p.entry, 1)}</b>${p.sl ? ` · sl $${fmt(p.sl, 1)}` : ''}${p.tp ? ` · tp $${fmt(p.tp, 1)}` : ''}</div>`
+        ? `<div class="openpos">open: <b class="side-${p.side}">${p.side.toUpperCase()}</b> <b>${fmt(p.qty, 5)}</b> @ <b>$${fmt(p.entry, 1)}</b>${p.sl ? ` · sl $${fmt(p.sl, 1)}` : ''}${p.tp ? ` · tp $${fmt(p.tp, 1)}` : ''} · ${ago(p.entry_ts)}</div>`
         : `<div class="openpos">open: <b>flat</b></div>`;
-      const chips = Object.entries(b.params || {})
+      const prm = b.params || {};
+      const dailyLossCap = (prm.max_daily_loss_pct || 0) * b.balance;
+      const risk =
+        riskBar('Daily loss', Math.max(0, -b.today_pnl), dailyLossCap, `$${fmt(Math.max(0, -b.today_pnl), 0)} / $${fmt(dailyLossCap, 0)}`) +
+        riskBar('Trades today', b.today_trades || 0, prm.max_trades_per_day || 0, `${b.today_trades || 0} / ${prm.max_trades_per_day || '—'}`) +
+        riskBar('Drawdown', b.drawdown_pct || 0, 100 * (prm.max_drawdown_pct || 0), `${fmt(b.drawdown_pct, 1)}% / ${fmt(100 * (prm.max_drawdown_pct || 0), 0)}%`);
+      const chips = Object.entries(prm)
         .map(([k, v]) => `<span class="chip">${k.replace(/_/g, ' ')} <b>${typeof v === 'number' && v < 1 && v > 0 && k.includes('pct') ? (v * 100).toFixed(2) + '%' : v}</b></span>`)
         .join('');
-      const rows = (b.last_trades || []).slice(0, 12).map(t => `
+      const exits = (b.by_exit || []).map(e =>
+        `<tr><td>${e.reason}</td><td>${e.n}</td><td class="${pnlCls(e.pnl)}">${sign(e.pnl)}$${fmt(Math.abs(e.pnl))}</td></tr>`).join('');
+      const rows = (b.last_trades || []).slice(0, 10).map(t => `
         <tr>
           <td class="side-${t.side}">${t.side.toUpperCase()}</td>
           <td>${ts(t.exit_ts)}</td>
           <td>$${fmt(t.entry_px, 1)} → $${fmt(t.exit_px, 1)}</td>
-          <td>${fmt(t.qty, 5)}</td>
+          <td>${dur(t.exit_ts - t.entry_ts)}</td>
           <td class="${pnlCls(t.pnl)}">${sign(t.pnl)}$${fmt(Math.abs(t.pnl))}</td>
           <td>${t.reason}</td>
         </tr>`).join('');
       return `
-        <div class="bot">
+        <div class="card">
           <div class="bot-head">
             <div><div class="bot-name">${m.name}</div><div class="bot-sub">${m.sub}</div></div>
-            <div class="bot-sub">${b.trades} trades (${b.today_trades ?? 0} today) · win rate ${b.win_rate == null ? '—' : b.win_rate + '%'}</div>
+            <div class="bot-sub">${b.trades} trades (${b.today_trades ?? 0} today) · avg hold ${b.avg_hold_s ? dur(b.avg_hold_s) : '—'}</div>
           </div>
           <div class="stats">
             <div class="stat"><div class="k">Equity</div><div class="v">$${fmt(b.equity)}</div></div>
             <div class="stat"><div class="k">Total P&L</div><div class="v ${pnlCls(b.total_pnl)}">${sign(b.total_pnl)}$${fmt(Math.abs(b.total_pnl))}</div></div>
             <div class="stat"><div class="k">Today</div><div class="v ${pnlCls(b.today_pnl)}">${sign(b.today_pnl)}$${fmt(Math.abs(b.today_pnl))}</div></div>
+            <div class="stat"><div class="k">Win rate</div><div class="v">${b.win_rate == null ? '—' : b.win_rate + '%'}</div></div>
+            <div class="stat"><div class="k">Profit factor</div><div class="v">${b.profit_factor == null ? '—' : fmt(b.profit_factor)}</div></div>
+            <div class="stat"><div class="k">Avg win / loss</div><div class="v" style="font-size:13px">${b.avg_win == null ? '—' : '+$' + fmt(b.avg_win)} / ${b.avg_loss == null ? '—' : '−$' + fmt(Math.abs(b.avg_loss))}</div></div>
+            <div class="stat"><div class="k">Best / worst</div><div class="v" style="font-size:13px"><span class="pos">+$${fmt(b.best)}</span> / <span class="neg">−$${fmt(Math.abs(b.worst))}</span></div></div>
             <div class="stat"><div class="k">Drawdown</div><div class="v ${b.drawdown_pct > 0 ? 'neg' : ''}">${fmt(b.drawdown_pct ?? 0, 2)}%</div></div>
           </div>
           ${posLine}
+          <div class="risk">${risk}</div>
           <details class="params"><summary>strategy &amp; risk parameters</summary><div class="param-chips">${chips}</div></details>
-          <div class="chart-box"><canvas id="chart-${key}"></canvas></div>
+          <div class="sec-title">Equity
+            <span class="ranges" data-bot="${key}">
+              <button data-r="24h" class="${ranges[key] === '24h' ? 'on' : ''}">24h</button>
+              <button data-r="3d" class="${ranges[key] === '3d' ? 'on' : ''}">3d</button>
+              <button data-r="all" class="${ranges[key] === 'all' ? 'on' : ''}">all</button>
+            </span>
+          </div>
+          <div class="chart-md"><canvas id="chart-${key}"></canvas></div>
+          <div class="split" style="margin-top:12px">
+            <div class="panel"><div class="ph">Daily P&L (14d)</div><div class="chart-sm"><canvas id="daily-${key}"></canvas></div></div>
+            <div class="panel"><div class="ph">Exit breakdown</div>
+              ${exits ? `<table><thead><tr><th>Exit</th><th>N</th><th>P&L</th></tr></thead><tbody>${exits}</tbody></table>` : '<div class="empty">no closed trades</div>'}
+            </div>
+          </div>
           <div class="tablewrap">
-          ${rows ? `<table><thead><tr><th>Side</th><th>Closed</th><th>Entry → Exit</th><th>Qty</th><th>P&L</th><th>Reason</th></tr></thead><tbody>${rows}</tbody></table>`
+          ${rows ? `<table><thead><tr><th>Side</th><th>Closed</th><th>Entry → Exit</th><th>Held</th><th>P&L</th><th>Reason</th></tr></thead><tbody>${rows}</tbody></table>`
                  : '<div class="empty">No closed trades yet — waiting for a signal.</div>'}
           </div>
         </div>`;
     }
 
-    function drawChart(key, curve, startBalance) {
+    function drawEquity(key, curve) {
       const ctx = document.getElementById('chart-' + key);
       if (!ctx || !curve || curve.length < 2) return;
+      const cutoff = ranges[key] === '24h' ? Date.now() / 1000 - 86400
+                   : ranges[key] === '3d' ? Date.now() / 1000 - 3 * 86400 : 0;
+      const pts = curve.filter(p => p[0] >= cutoff).map(p => ({ x: p[0], y: p[1] }));
+      if (pts.length < 2) return;
       if (charts[key]) charts[key].destroy();
-      const last = curve[curve.length - 1][1];
-      const up = last >= curve[0][1];
+      const up = pts[pts.length - 1].y >= pts[0].y;
       charts[key] = new Chart(ctx, {
         type: 'line',
-        data: {
-          labels: curve.map(p => new Date(p[0] * 1000).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })),
-          datasets: [{
-            data: curve.map(p => p[1]),
-            borderColor: up ? '#10b981' : '#ef4444',
-            backgroundColor: up ? 'rgba(16,185,129,.08)' : 'rgba(239,68,68,.08)',
-            fill: true, borderWidth: 1.5, pointRadius: 0, tension: 0.25,
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false, animation: false,
-          plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } },
+        data: { datasets: [{ data: pts, borderColor: up ? '#10b981' : '#ef4444',
+          backgroundColor: up ? 'rgba(16,185,129,.08)' : 'rgba(239,68,68,.08)',
+          fill: true, borderWidth: 1.5, pointRadius: 0, tension: 0.25, parsing: false }] },
+        options: { ...baseOpts(),
           scales: {
-            x: { display: false },
+            x: { type: 'linear', ticks: { color: '#64748b', font: { size: 10 }, maxTicksLimit: 6, callback: tsTick }, grid: { display: false } },
             y: { grid: { color: 'rgba(28,42,71,.4)' }, ticks: { color: '#64748b', font: { size: 10 }, callback: v => '$' + v.toLocaleString() } }
-          }
-        }
+          } }
       });
+    }
+
+    function drawDaily(key, daily) {
+      const ctx = document.getElementById('daily-' + key);
+      if (!ctx || !daily || !daily.length) return;
+      if (charts['d' + key]) charts['d' + key].destroy();
+      charts['d' + key] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: daily.map(d => d[0].slice(5)),
+          datasets: [{ data: daily.map(d => d[1]),
+            backgroundColor: daily.map(d => d[1] >= 0 ? 'rgba(16,185,129,.7)' : 'rgba(239,68,68,.7)') }]
+        },
+        options: { ...baseOpts(),
+          scales: {
+            x: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { display: false } },
+            y: { ticks: { color: '#64748b', font: { size: 9 }, callback: v => '$' + v }, grid: { color: 'rgba(28,42,71,.4)' } }
+          } }
+      });
+    }
+
+    function renderSummary(d) {
+      const bots = Object.values(d.bots);
+      const eq = bots.reduce((s, b) => s + (b.equity || 0), 0);
+      const pnl = bots.reduce((s, b) => s + (b.total_pnl || 0), 0);
+      const today = bots.reduce((s, b) => s + (b.today_pnl || 0), 0);
+      const open = bots.filter(b => b.open_position).length;
+      document.getElementById('summary').innerHTML =
+        `<div class="stat"><div class="k">Combined equity</div><div class="v">$${fmt(eq)}</div></div>` +
+        `<div class="stat"><div class="k">Combined P&L</div><div class="v ${pnlCls(pnl)}">${sign(pnl)}$${fmt(Math.abs(pnl))}</div></div>` +
+        `<div class="stat"><div class="k">Today (all bots)</div><div class="v ${pnlCls(today)}">${sign(today)}$${fmt(Math.abs(today))}</div></div>` +
+        `<div class="stat"><div class="k">Open positions</div><div class="v">${open} / ${bots.length}</div></div>`;
     }
 
     async function load() {
       try {
         const r = await fetch('trading.json?t=' + Date.now(), { cache: 'no-store' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
-        const d = await r.json();
-        document.getElementById('btcPrice').textContent = d.btc_price ? '$' + fmt(d.btc_price, 1) + ' BTC' : '—';
-        document.getElementById('updated').textContent = 'updated ' + ago(d.generated);
-        const anyLive = Object.values(d.bots).some(b => b.mode === 'live');
+        DATA = await r.json();
+        document.getElementById('updated').textContent = 'stats ' + ago(DATA.generated);
+        const anyLive = Object.values(DATA.bots).some(b => b.mode === 'live');
         document.getElementById('modeBadge').textContent = anyLive ? 'LIVE' : 'PAPER';
-        const holder = document.getElementById('bots');
-        holder.innerHTML = Object.entries(d.bots).map(([k, b]) => botCard(k, b)).join('');
-        for (const [k, b] of Object.entries(d.bots)) drawChart(k, b.equity_curve);
+        renderSummary(DATA);
+        renderMarket(DATA.market);
+        document.getElementById('bots').innerHTML = Object.entries(DATA.bots).map(([k, b]) => botCard(k, b)).join('');
+        for (const [k, b] of Object.entries(DATA.bots)) { drawEquity(k, b.equity_curve); drawDaily(k, b.daily_pnl); }
+        drawPrice();
+        document.querySelectorAll('.ranges').forEach(el => el.addEventListener('click', ev => {
+          const btn = ev.target.closest('button');
+          if (!btn) return;
+          const bot = el.dataset.bot;
+          ranges[bot] = btn.dataset.r;
+          el.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === btn));
+          drawEquity(bot, DATA.bots[bot].equity_curve);
+        }));
       } catch (e) {
         document.getElementById('updated').textContent = 'no data yet (' + e.message + ')';
       }
     }
-    load();
+
+    load(); tick(); loadKlines();
     setInterval(load, 60000);
+    setInterval(tick, 15000);
+    setInterval(loadKlines, 300000);
   </script>
 </body>
 </html>
