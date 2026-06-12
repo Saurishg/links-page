@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTC Trading Bots — Saurishg</title>
+  <meta name="description" content="Live P&L dashboard for BTC long/short swing bot and HFT scalper" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07090f; --card: #0f1629; --card2: #131d35; --border: #1c2a47;
+      --btc: #f7931a; --green: #10b981; --red: #ef4444; --indigo: #6366f1;
+      --text: #f0f4ff; --muted: #64748b;
+    }
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 28px 16px 48px;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 10%, rgba(247,147,26,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 35% at 80% 80%, rgba(99,102,241,.08) 0%, transparent 55%);
+    }
+    .wrap { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+    .top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+    .title { font-size: 22px; font-weight: 800; letter-spacing: -.4px; }
+    .title .btc { color: var(--btc); }
+    .meta { font-size: 12px; color: var(--muted); text-align: right; line-height: 1.6; }
+    .meta .price { font-size: 16px; font-weight: 700; color: var(--text); }
+    .badge {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .5px;
+      padding: 3px 9px; border-radius: 99px; vertical-align: middle; margin-left: 8px;
+      color: var(--btc); background: rgba(247,147,26,.12); border: 1px solid rgba(247,147,26,.25);
+    }
+    .back { font-size: 12.5px; color: var(--muted); text-decoration: none; }
+    .back:hover { color: var(--text); }
+
+    .bot { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 18px; }
+    .bot-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .bot-name { font-size: 15px; font-weight: 700; }
+    .bot-sub { font-size: 11.5px; color: var(--muted); }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .stat { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .stat .k { font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .stat .v { font-size: 16px; font-weight: 700; }
+    .pos { color: var(--green); } .neg { color: var(--red); }
+    .chart-box { background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 10px; height: 180px; margin-bottom: 14px; }
+    .openpos { font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+    .openpos b { color: var(--text); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { text-align: left; font-size: 10px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--border); }
+    td { padding: 6px 8px; border-bottom: 1px solid rgba(28,42,71,.5); white-space: nowrap; }
+    .side-long  { color: var(--green); font-weight: 600; }
+    .side-short { color: var(--red); font-weight: 600; }
+    .empty { color: var(--muted); font-size: 12.5px; padding: 14px 4px; }
+    .footer { text-align: center; font-size: 11px; color: #334155; margin-top: 26px; line-height: 1.7; }
+    .footer a { color: #475569; text-decoration: none; }
+    .tablewrap { overflow-x: auto; }
+    @media (max-width: 540px) { .title { font-size: 18px; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="title"><span class="btc">₿</span> BTC Trading Bots<span class="badge" id="modeBadge">PAPER</span></div>
+        <a class="back" href="./index.html">‹ back to links</a>
+      </div>
+      <div class="meta">
+        <div class="price" id="btcPrice">—</div>
+        <div id="updated">loading…</div>
+      </div>
+    </div>
+
+    <div id="bots"></div>
+
+    <div class="footer">
+      Paper trading on live Binance USDT-M perpetual prices · data refreshes every 5 min<br/>
+      <a href="https://github.com/Saurishg" target="_blank" rel="noopener">github.com/Saurishg</a>
+    </div>
+  </div>
+
+  <script>
+    const BOT_META = {
+      swing: { name: '📈 Swing Bot — long/short', sub: '1h regime (EMA50/200) · 15m EMA cross + RSI · ATR stops · 1% risk' },
+      hft:   { name: '⚡ HFT Scalper', sub: '2s loop · order-book imbalance + momentum · 0.12% TP / 0.08% SL' },
+    };
+    const charts = {};
+
+    const fmt = (n, d = 2) => n == null ? '—' : n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+    const pnlCls = n => n > 0 ? 'pos' : n < 0 ? 'neg' : '';
+    const sign = n => n > 0 ? '+' : '';
+    const ts = t => new Date(t * 1000).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const ago = t => {
+      const s = Math.floor(Date.now() / 1000 - t);
+      if (s < 90) return s + 's ago';
+      if (s < 5400) return Math.round(s / 60) + 'm ago';
+      return Math.round(s / 3600) + 'h ago';
+    };
+
+    function botCard(key, b) {
+      const m = BOT_META[key] || { name: key, sub: '' };
+      const p = b.open_position;
+      const posLine = p
+        ? `<div class="openpos">open: <b class="side-${p.side}">${p.side.toUpperCase()}</b> <b>${fmt(p.qty, 5)}</b> @ <b>$${fmt(p.entry, 1)}</b>${p.sl ? ` · sl $${fmt(p.sl, 1)}` : ''}${p.tp ? ` · tp $${fmt(p.tp, 1)}` : ''}</div>`
+        : `<div class="openpos">open: <b>flat</b></div>`;
+      const rows = (b.last_trades || []).slice(0, 12).map(t => `
+        <tr>
+          <td class="side-${t.side}">${t.side.toUpperCase()}</td>
+          <td>${ts(t.exit_ts)}</td>
+          <td>$${fmt(t.entry_px, 1)} → $${fmt(t.exit_px, 1)}</td>
+          <td>${fmt(t.qty, 5)}</td>
+          <td class="${pnlCls(t.pnl)}">${sign(t.pnl)}$${fmt(Math.abs(t.pnl))}</td>
+          <td>${t.reason}</td>
+        </tr>`).join('');
+      return `
+        <div class="bot">
+          <div class="bot-head">
+            <div><div class="bot-name">${m.name}</div><div class="bot-sub">${m.sub}</div></div>
+            <div class="bot-sub">${b.trades} trades · win rate ${b.win_rate == null ? '—' : b.win_rate + '%'}</div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="k">Equity</div><div class="v">$${fmt(b.equity)}</div></div>
+            <div class="stat"><div class="k">Total P&L</div><div class="v ${pnlCls(b.total_pnl)}">${sign(b.total_pnl)}$${fmt(Math.abs(b.total_pnl))}</div></div>
+            <div class="stat"><div class="k">Today</div><div class="v ${pnlCls(b.today_pnl)}">${sign(b.today_pnl)}$${fmt(Math.abs(b.today_pnl))}</div></div>
+            <div class="stat"><div class="k">Balance</div><div class="v">$${fmt(b.balance)}</div></div>
+          </div>
+          ${posLine}
+          <div class="chart-box"><canvas id="chart-${key}"></canvas></div>
+          <div class="tablewrap">
+          ${rows ? `<table><thead><tr><th>Side</th><th>Closed</th><th>Entry → Exit</th><th>Qty</th><th>P&L</th><th>Reason</th></tr></thead><tbody>${rows}</tbody></table>`
+                 : '<div class="empty">No closed trades yet — waiting for a signal.</div>'}
+          </div>
+        </div>`;
+    }
+
+    function drawChart(key, curve, startBalance) {
+      const ctx = document.getElementById('chart-' + key);
+      if (!ctx || !curve || curve.length < 2) return;
+      if (charts[key]) charts[key].destroy();
+      const last = curve[curve.length - 1][1];
+      const up = last >= curve[0][1];
+      charts[key] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: curve.map(p => new Date(p[0] * 1000).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })),
+          datasets: [{
+            data: curve.map(p => p[1]),
+            borderColor: up ? '#10b981' : '#ef4444',
+            backgroundColor: up ? 'rgba(16,185,129,.08)' : 'rgba(239,68,68,.08)',
+            fill: true, borderWidth: 1.5, pointRadius: 0, tension: 0.25,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          plugins: { legend: { display: false }, tooltip: { intersect: false, mode: 'index' } },
+          scales: {
+            x: { display: false },
+            y: { grid: { color: 'rgba(28,42,71,.4)' }, ticks: { color: '#64748b', font: { size: 10 }, callback: v => '$' + v.toLocaleString() } }
+          }
+        }
+      });
+    }
+
+    async function load() {
+      try {
+        const r = await fetch('trading.json?t=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json();
+        document.getElementById('btcPrice').textContent = d.btc_price ? '$' + fmt(d.btc_price, 1) + ' BTC' : '—';
+        document.getElementById('updated').textContent = 'updated ' + ago(d.generated);
+        const anyLive = Object.values(d.bots).some(b => b.mode === 'live');
+        document.getElementById('modeBadge').textContent = anyLive ? 'LIVE' : 'PAPER';
+        const holder = document.getElementById('bots');
+        holder.innerHTML = Object.entries(d.bots).map(([k, b]) => botCard(k, b)).join('');
+        for (const [k, b] of Object.entries(d.bots)) drawChart(k, b.equity_curve);
+      } catch (e) {
+        document.getElementById('updated').textContent = 'no data yet (' + e.message + ')';
+      }
+    }
+    load();
+    setInterval(load, 60000);
+  </script>
+</body>
+</html>
