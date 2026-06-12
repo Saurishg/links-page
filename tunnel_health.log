@@ -5321,7 +5321,3 @@ fatal: unable to access 'https://github.com/Saurishg/links-page.git/': Could not
 [2026-06-03 03:52:27] ipmi STALE — restarting
 [2026-06-03 03:52:38] ipmi → https://api.trycloudflare.com
 [2026-06-03 03:52:48] atinus STALE — restarting
-[2026-06-09 00:37:13] Health check starting
-[2026-06-09 00:37:19] mpt STALE — restarting
-[2026-06-11 22:36:11] Health check starting
-[2026-06-11 22:36:17] mpt STALE — restarting
