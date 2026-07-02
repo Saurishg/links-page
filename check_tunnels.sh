@@ -14,7 +14,7 @@ TUNNELS=(
   "chat|8080|process"
   "comfyui|8188|process"
   "dashboard|3000|process"
-  "ipmi|http://192.168.2.103|process"
+  "ipmi|http://192.168.0.103|process"
   "atinus|8765|process"
   "mpt|8501|process"
   "grafana|grafana|systemd"
@@ -34,7 +34,7 @@ restart_systemd_tunnel() {
   sudo systemctl restart "cloudflared-${name}"
   sleep 8
   local url
-  url=$(journalctl -u "cloudflared-${name}" --since "10 seconds ago" --no-pager 2>/dev/null | grep -oP 'https://[a-z0-9\-]+\.trycloudflare\.com' | tail -1)
+  url=$(journalctl -u "cloudflared-${name}" --since "10 seconds ago" --no-pager 2>/dev/null | grep -oP 'https://(?!api\.)[a-z0-9\-]+\.trycloudflare\.com' | tail -1)
   echo "$url"
 }
 
@@ -60,14 +60,15 @@ restart_process_tunnel() {
     tunnel_target="http://localhost:${target}"
   fi
 
-  $CF tunnel --url "$tunnel_target" --no-autoupdate 2>&1 | \
+  ( $CF tunnel --url "$tunnel_target" --no-autoupdate 2>&1 | \
     tee -a "$logfile" | \
     grep --line-buffered "trycloudflare.com" | \
     while IFS= read -r line; do
       local u
-      u=$(echo "$line" | grep -oP 'https://[a-z0-9\-]+\.trycloudflare\.com')
+      u=$(echo "$line" | grep -oP 'https://(?!api\.)[a-z0-9\-]+\.trycloudflare\.com')
       [ -n "$u" ] && echo "$u" > "$urlfile"
-    done &
+    done ) </dev/null >/dev/null 2>&1 &
+  disown
 
   # Wait for URL
   for i in $(seq 1 15); do
