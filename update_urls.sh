@@ -71,12 +71,20 @@ open(path, 'w').write(content)
 print(f"✓ {changed} URL replacement(s) applied")
 PY
 
-# Commit + push only if file changed
+# Commit if the file changed
 if ! git diff --quiet index.html; then
   git add index.html
   git commit -m "auto-update tunnel URLs ($(date '+%Y-%m-%d %H:%M'))"
-  GIT_ASKPASS=echo git push origin main
-  echo "✓ Pushed updated URLs to GitHub Pages"
 else
-  echo "✓ URLs unchanged — no push needed"
+  echo "✓ URLs unchanged"
+fi
+
+# Single publisher for this repo: push anything unpushed (our commit and/or
+# trading.json commits from export_dashboard.py, which no longer pushes itself).
+# One push per run = one Pages deployment = no more racing deploys.
+if [ -n "$(git rev-list origin/main..main 2>/dev/null)" ]; then
+  GIT_ASKPASS=echo git push origin main
+  echo "✓ Pushed pending commits to GitHub Pages"
+else
+  echo "✓ Nothing to push"
 fi
