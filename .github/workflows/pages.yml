@@ -1,0 +1,35 @@
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Queue deployments instead of racing them. Legacy branch-based Pages has no
+# concurrency control, so two pushes landing minutes apart (routine 5-min sync
+# + tunnel-restart-triggered push) would race and one would fail with
+# "Deployment failed, try again later." cancel-in-progress: false means a
+# second trigger waits for the first to finish rather than fighting it.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - id: deployment
+        uses: actions/deploy-pages@v4
