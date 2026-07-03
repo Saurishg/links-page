@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 # Queue deployments instead of racing them. Legacy branch-based Pages has no
-# concurrency control, so two pushes landing minutes apart (routine 5-min sync
+# concurrency control, so two pushes landing minutes apart (routine cron sync
 # + tunnel-restart-triggered push) would race and one would fail with
 # "Deployment failed, try again later." cancel-in-progress: false means a
 # second trigger waits for the first to finish rather than fighting it.
@@ -23,7 +23,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: https://saurishg.github.io/links-page/
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,5 +31,42 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
-      - id: deployment
+
+      # Even fully serialized (see concurrency above), GitHub's Pages backend
+      # occasionally returns a transient "Deployment failed, try again later."
+      # with no overlapping deployment anywhere nearby — plain backend
+      # flakiness, not a race. deploy-pages@v4 has no built-in retry for this
+      # (its own retry logic only covers slow *polling*, not a hard failure
+      # response), so retry the whole step up to 3x here. A third-party retry
+      # wrapper (e.g. nick-fields/retry) can't be used — it only wraps shell
+      # commands, not `uses:` actions — so this is done as explicit chained
+      # steps instead.
+      - name: Deploy to GitHub Pages (attempt 1)
+        id: deploy1
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Wait before retry 2
+        if: steps.deploy1.outcome == 'failure'
+        run: sleep 20
+
+      - name: Deploy to GitHub Pages (attempt 2)
+        id: deploy2
+        if: steps.deploy1.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Wait before retry 3
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        run: sleep 40
+
+      - name: Deploy to GitHub Pages (attempt 3)
+        id: deploy3
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+
+      - name: Fail if every attempt failed
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure' && steps.deploy3.outcome == 'failure'
+        run: |
+          echo "::error::All 3 deploy-pages attempts failed — this is a real failure, not transient flakiness."
+          exit 1
