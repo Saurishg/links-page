@@ -166,17 +166,20 @@ if [ "$UPDATED" -eq 1 ]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Links page updated" >> "$LOG"
 fi
 
-# End-to-end check: the LIVE GitHub Pages site must serve the current tunnel
-# URLs. Catches failed pushes / stuck Pages deploys that the local checks
-# can't see. Tolerate one stale run (deploy may still be propagating) —
-# alert only when stale twice in a row (>10 min).
+# End-to-end check: the LIVE stable redirect pages (/go/<name>/) must forward
+# to the current tunnel URLs. Catches failed pushes / stuck Pages deploys that
+# the local checks can't see. Tolerate one stale run (deploy may still be
+# propagating) — alert only when stale twice in a row (>10 min).
 STALE_STATE="/tmp/links_page_stale_runs"
 live=$(curl -s --max-time 20 "https://saurishg.github.io/links-page/?hc=$(date +%s)" 2>/dev/null)
 if [ -n "$live" ]; then
   missing=""
   for f in /tmp/cf_url_*; do
     u=$(cat "$f" 2>/dev/null)
-    [ -n "$u" ] && ! grep -qF "$u" <<< "$live" && missing="$missing $(basename "$f" | sed 's/cf_url_//')"
+    [ -z "$u" ] && continue
+    n=$(basename "$f" | sed 's/cf_url_//')
+    page=$(curl -s --max-time 15 "https://saurishg.github.io/links-page/go/${n}/?hc=$(date +%s)" 2>/dev/null)
+    grep -qF "$u" <<< "$page" || missing="$missing $n"
   done
   if [ -n "$missing" ]; then
     runs=$(( $(cat "$STALE_STATE" 2>/dev/null || echo 0) + 1 ))

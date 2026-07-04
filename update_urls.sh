@@ -1,9 +1,11 @@
 #!/bin/bash
-# Auto-update links-page index.html with current Cloudflare tunnel URLs.
-# Uses data-tunnel="<name>" attributes on <a> tags for reliable replacement.
-# Called automatically by start_tunnel.sh after tunnels come up.
+# Regenerate the stable redirect pages (go/<name>/index.html) with current
+# Cloudflare tunnel URLs and push. index.html cards link to ./go/<name>/ and
+# never change — only the redirect targets rotate.
+# Called automatically by start_tunnel.sh and check_tunnels.sh.
 #
-# To add a new tunnel: just add its name to the TUNNELS list below.
+# To add a new tunnel: add its name to the TUNNELS list below and give
+# index.html a card pointing at ./go/<name>/.
 # Each name N expects /tmp/cf_url_N to contain the live URL (or be missing/empty).
 
 set -e
@@ -13,7 +15,6 @@ exec 200>/tmp/links-page-update.lock
 flock -n 200 || { echo "Another update already running — skipping"; exit 0; }
 
 REPO=/home/work/links-page
-HTML=$REPO/index.html
 
 # Tunnels we know about. Add new tunnel names here — no other code changes needed.
 TUNNELS=(chat comfyui dashboard grafana obsidian ipmi atinus comfyui_rocm mpt)
@@ -36,44 +37,40 @@ fi
 
 cd "$REPO"
 
-python3 - "$HTML" "${PAIRS[@]}" <<'PY'
-import sys, re
+# index.html cards point at the stable ./go/<name>/ paths and never change.
+# Regenerate the stable redirect pages: /go/<name>/ never changes, always
+# forwards to the current tunnel URL. These are the URLs users bookmark.
+for pair in "${PAIRS[@]}"; do
+  name="${pair%%=*}"
+  url="${pair#*=}"
+  echo "  [$name] → $url"
+  mkdir -p "$REPO/go/$name"
+  cat > "$REPO/go/$name/index.html" <<EOF
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0;url=$url">
+<title>$name — redirecting…</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+       background:#0b0f1a;color:#e2e8f0;font-family:Inter,system-ui,sans-serif}
+  a{color:#818cf8}
+</style>
+</head>
+<body>
+<p>Connecting to <strong>$name</strong>… <a href="$url">tap here</a> if nothing happens.</p>
+<script>location.replace("$url");</script>
+</body>
+</html>
+EOF
+done
 
-path = sys.argv[1]
-urls = dict(p.split('=', 1) for p in sys.argv[2:])
-
-content = open(path).read()
-
-# For each data-tunnel anchor, replace the href URL.
-# Supports both attribute orders (data-tunnel before href, or after).
-def replace_tunnel(content, tunnel_name, new_url):
-    if not new_url:
-        return content, 0
-    pat_a = (r'(<a\s[^>]*data-tunnel="' + re.escape(tunnel_name) +
-             r'"[^>]*href=")https://[a-z0-9\-]+\.trycloudflare\.com(")')
-    pat_b = (r'(<a\s[^>]*href=")https://[a-z0-9\-]+\.trycloudflare\.com'
-             r'("[^>]*data-tunnel="' + re.escape(tunnel_name) + r'")')
-    new, n = re.subn(pat_a, r'\g<1>' + new_url + r'\g<2>', content)
-    if n == 0:
-        new, n = re.subn(pat_b, r'\g<1>' + new_url + r'\g<2>', content)
-    return new, n
-
-changed = 0
-for name, url in urls.items():
-    content, n = replace_tunnel(content, name, url)
-    if n > 0:
-        print(f"  [{name}] → {url}")
-        changed += n
-    else:
-        print(f"  [{name}] (no anchor with data-tunnel='{name}' — skipped)", file=sys.stderr)
-
-open(path, 'w').write(content)
-print(f"✓ {changed} URL replacement(s) applied")
-PY
-
-# Commit if the file changed
-if ! git diff --quiet index.html; then
-  git add index.html
+# Commit if anything changed
+git add index.html go/
+if ! git diff --cached --quiet; then
   git commit -m "auto-update tunnel URLs ($(date '+%Y-%m-%d %H:%M'))"
 else
   echo "✓ URLs unchanged"
