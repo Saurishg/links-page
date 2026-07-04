@@ -8,6 +8,13 @@ UPDATED=0
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Health check starting" >> "$LOG"
 
+# If the uplink itself is down, every tunnel looks dead — bail out instead of
+# mass-restarting healthy tunnels (they'd all rotate URLs for nothing)
+if ! curl -s -o /dev/null --max-time 10 https://1.1.1.1/; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Uplink down (1.1.1.1 unreachable) — skipping run" >> "$LOG"
+  exit 0
+fi
+
 # Tunnel definitions: name|port|type (systemd or process)
 # For systemd tunnels, "port" is the service name suffix (cloudflared-<name>)
 TUNNELS=(
@@ -22,13 +29,54 @@ TUNNELS=(
   "obsidian|obsidian|systemd"
 )
 
+# All URL checks resolve via DNS-over-HTTPS: a fresh trycloudflare hostname
+# queried before its record exists gets NXDOMAIN negative-cached by
+# systemd-resolved/ISP resolvers, making healthy tunnels look dead for up to
+# an hour (and DoH also sidesteps the ISP's UDP/DNS drops).
+DOH="--doh-url https://1.1.1.1/dns-query"
+
 check_url() {
   local url="$1"
   [ -z "$url" ] && return 1
   local code
-  code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 10 "$url" 2>/dev/null)
+  code=$(curl -sL $DOH -o /dev/null -w '%{http_code}' --max-time 10 "$url" 2>/dev/null)
   [ "$code" -ge 200 ] && [ "$code" -lt 500 ]
 }
+
+# A freshly restarted tunnel needs a few seconds before its DNS record exists
+# and the edge routes it — wait first (don't seed negative caches), then retry
+verify_url() {
+  local url="$1" i
+  sleep 5
+  for i in 1 2 3 4; do
+    check_url "$url" && return 0
+    sleep 5
+  done
+  return 1
+}
+
+# WhatsApp alert via shared wa-service (:3131), max one per hour so a
+# persistent failure doesn't spam every 10-min run
+ALERT_STATE="/tmp/tunnel_alert_last"
+send_alert() {
+  local msg="$1" now last=0
+  now=$(date +%s)
+  [ -f "$ALERT_STATE" ] && last=$(cat "$ALERT_STATE" 2>/dev/null)
+  if [ $((now - ${last:-0})) -lt 3600 ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Alert suppressed (cooldown): $msg" >> "$LOG"
+    return
+  fi
+  local payload
+  payload=$(python3 -c 'import json,sys; print(json.dumps({"phone":"919818187001","message":sys.argv[1]}))' "$msg")
+  if curl -s --max-time 20 -X POST http://localhost:3131/send \
+       -H 'Content-Type: application/json' -d "$payload" | grep -q '"ok":true'; then
+    echo "$now" > "$ALERT_STATE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Alert sent: $msg" >> "$LOG"
+  else
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Alert send FAILED: $msg" >> "$LOG"
+  fi
+}
+FAILED_TUNNELS=""
 
 restart_systemd_tunnel() {
   local name="$1"
@@ -95,12 +143,20 @@ for entry in "${TUNNELS[@]}"; do
     new_url=$(restart_process_tunnel "$name" "$target")
   fi
 
-  if [ -n "$new_url" ]; then
+  if [ -n "$new_url" ] && verify_url "$new_url"; then
     echo "$new_url" > "/tmp/cf_url_${name}"
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $name → $new_url" >> "$LOG"
     UPDATED=1
+  elif [ -n "$new_url" ]; then
+    # Tunnel registered but never served — dead origin or tunnel died again.
+    # Still publish the URL (better than the old dead one) but flag it.
+    echo "$new_url" > "/tmp/cf_url_${name}"
+    UPDATED=1
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $name restarted but NOT serving ($new_url)" >> "$LOG"
+    FAILED_TUNNELS="$FAILED_TUNNELS $name(not-serving)"
   else
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $name FAILED to get new URL" >> "$LOG"
+    FAILED_TUNNELS="$FAILED_TUNNELS $name(no-url)"
   fi
 done
 
@@ -108,6 +164,37 @@ done
 if [ "$UPDATED" -eq 1 ]; then
   /home/work/links-page/update_urls.sh >> "$LOG" 2>&1
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Links page updated" >> "$LOG"
+fi
+
+# End-to-end check: the LIVE GitHub Pages site must serve the current tunnel
+# URLs. Catches failed pushes / stuck Pages deploys that the local checks
+# can't see. Tolerate one stale run (deploy may still be propagating) —
+# alert only when stale twice in a row (>10 min).
+STALE_STATE="/tmp/links_page_stale_runs"
+live=$(curl -s --max-time 20 "https://saurishg.github.io/links-page/?hc=$(date +%s)" 2>/dev/null)
+if [ -n "$live" ]; then
+  missing=""
+  for f in /tmp/cf_url_*; do
+    u=$(cat "$f" 2>/dev/null)
+    [ -n "$u" ] && ! grep -qF "$u" <<< "$live" && missing="$missing $(basename "$f" | sed 's/cf_url_//')"
+  done
+  if [ -n "$missing" ]; then
+    runs=$(( $(cat "$STALE_STATE" 2>/dev/null || echo 0) + 1 ))
+    echo "$runs" > "$STALE_STATE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Live page stale (run $runs):$missing" >> "$LOG"
+    # Re-run the publisher — it pushes any unpushed commits
+    /home/work/links-page/update_urls.sh >> "$LOG" 2>&1
+    [ "$runs" -ge 2 ] && FAILED_TUNNELS="$FAILED_TUNNELS live-page-stale($missing )"
+  else
+    rm -f "$STALE_STATE"
+  fi
+else
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Could not fetch live page (network?)" >> "$LOG"
+fi
+
+if [ -n "$FAILED_TUNNELS" ]; then
+  send_alert "⚠️ Links page health: not self-healing:$FAILED_TUNNELS
+Check tunnel_health.log on work-desktop."
 fi
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Health check done" >> "$LOG"
