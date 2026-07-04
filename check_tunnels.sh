@@ -171,15 +171,21 @@ fi
 # the local checks can't see. Tolerate one stale run (deploy may still be
 # propagating) — alert only when stale twice in a row (>10 min).
 STALE_STATE="/tmp/links_page_stale_runs"
-live=$(curl -s --max-time 20 "https://saurishg.github.io/links-page/?hc=$(date +%s)" 2>/dev/null)
+live=$(curl -s --max-time 20 "https://saurishg.github.io/links-page/urls.json?hc=$(date +%s)" 2>/dev/null)
 if [ -n "$live" ]; then
   missing=""
   for f in /tmp/cf_url_*; do
     u=$(cat "$f" 2>/dev/null)
     [ -z "$u" ] && continue
     n=$(basename "$f" | sed 's/cf_url_//')
+    # urls.json is what the redirect pages actually fetch — it must be fresh
+    if ! grep -qF "$u" <<< "$live"; then
+      missing="$missing $n"
+      continue
+    fi
+    # the baked fallback in the redirect page should catch up too
     page=$(curl -s --max-time 15 "https://saurishg.github.io/links-page/go/${n}/?hc=$(date +%s)" 2>/dev/null)
-    grep -qF "$u" <<< "$page" || missing="$missing $n"
+    grep -qF "$u" <<< "$page" || missing="$missing $n(fallback)"
   done
   if [ -n "$missing" ]; then
     runs=$(( $(cat "$STALE_STATE" 2>/dev/null || echo 0) + 1 ))

@@ -38,8 +38,26 @@ fi
 cd "$REPO"
 
 # index.html cards point at the stable ./go/<name>/ paths and never change.
+# Write urls.json — the single source of truth the redirect pages fetch with
+# a cache-busting query, so a rotation is picked up instantly even though
+# GitHub Pages serves everything with cache-control: max-age=600.
+python3 - "$REPO/urls.json" "${PAIRS[@]}" <<'PY'
+import json, sys
+urls = dict(p.split('=', 1) for p in sys.argv[2:])
+# Preserve entries for tunnels with no URL on disk right now (e.g. right
+# after a reboot) — last known beats missing
+try:
+    old = json.load(open(sys.argv[1]))
+except Exception:
+    old = {}
+old.update(urls)
+open(sys.argv[1], 'w').write(json.dumps(old, indent=1, sort_keys=True) + "\n")
+PY
+
 # Regenerate the stable redirect pages: /go/<name>/ never changes, always
 # forwards to the current tunnel URL. These are the URLs users bookmark.
+# JS fetches urls.json fresh (unique query defeats browser + CDN cache);
+# the baked-in meta refresh is the no-JS / fetch-failure fallback.
 for pair in "${PAIRS[@]}"; do
   name="${pair%%=*}"
   url="${pair#*=}"
@@ -52,7 +70,7 @@ for pair in "${PAIRS[@]}"; do
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0;url=$url">
+<meta http-equiv="refresh" content="2;url=$url">
 <title>$name — redirecting…</title>
 <style>
   body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
@@ -62,14 +80,19 @@ for pair in "${PAIRS[@]}"; do
 </head>
 <body>
 <p>Connecting to <strong>$name</strong>… <a href="$url">tap here</a> if nothing happens.</p>
-<script>location.replace("$url");</script>
+<script>
+fetch("../../urls.json?" + Date.now(), {cache: "no-store"})
+  .then(function(r){ return r.json(); })
+  .then(function(j){ location.replace(j["$name"] || "$url"); })
+  .catch(function(){ location.replace("$url"); });
+</script>
 </body>
 </html>
 EOF
 done
 
 # Commit if anything changed
-git add index.html go/
+git add index.html go/ urls.json
 if ! git diff --cached --quiet; then
   git commit -m "auto-update tunnel URLs ($(date '+%Y-%m-%d %H:%M'))"
 else
