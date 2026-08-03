@@ -5,14 +5,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Queue deployments instead of racing them. Legacy branch-based Pages has no
-# concurrency control, so two pushes landing minutes apart (routine cron sync
-# + tunnel-restart-triggered push) would race and one would fail with
-# "Deployment failed, try again later." cancel-in-progress: false means a
-# second trigger waits for the first to finish rather than fighting it.
+# Only one Pages deployment can run at a time. cancel-in-progress: true
+# ensures a newer push always wins — prevents queue buildup from cron pushes
+# that could otherwise get stuck in "queued" state indefinitely.
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: read
