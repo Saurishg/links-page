@@ -24,7 +24,6 @@ TUNNELS=(
   "ipmi|http://192.168.0.103|process"
   "atinus|8765|process"
   "mpt|8501|process"
-  "comfyui_rocm|8189|process"
   "grafana|grafana|systemd"
   "obsidian|obsidian|systemd"
 )

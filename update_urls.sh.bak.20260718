@@ -16,39 +16,8 @@ flock -n 200 || { echo "Another update already running — skipping"; exit 0; }
 
 REPO=/home/work/links-page
 
-# Self-heal a git repo corrupted by an unclean shutdown (0-byte loose objects /
-# bad HEAD — happened 2026-07-18, froze the live page for hours). Detect it and
-# rebuild .git from origin while keeping the working files, so a power loss can
-# never again silently stop the page from updating.
-ensure_git_healthy() {
-  # Healthy = HEAD resolves to a real commit OBJECT (cat-file -e verifies the
-  # object exists, unlike rev-parse which is happy with a dangling ref) AND no
-  # loose object file has been truncated to 0 bytes.
-  if git -C "$REPO" cat-file -e "HEAD^{commit}" 2>/dev/null \
-     && ! find "$REPO/.git/objects" -type f -empty 2>/dev/null | grep -q .; then
-    return 0   # healthy
-  fi
-  echo "⚠️  git repo corrupt — self-healing from origin"
-  local url tmp
-  url=$(git -C "$REPO" config --get remote.origin.url 2>/dev/null || echo "https://github.com/Saurishg/links-page.git")
-  tmp=$(mktemp -d)
-  if GIT_ASKPASS=echo git clone --quiet --bare "$url" "$tmp/g" 2>/dev/null; then
-    rm -rf "$REPO/.git" && mv "$tmp/g" "$REPO/.git"
-    git -C "$REPO" config core.bare false
-    git -C "$REPO" config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-    GIT_ASKPASS=echo git -C "$REPO" fetch --quiet origin 2>/dev/null || true
-    # --mixed: fix HEAD/index from origin but KEEP working files (urls.json,
-    # go/, trading.json); the commit/push logic below then republishes them.
-    git -C "$REPO" reset --mixed origin/main >/dev/null 2>&1 || true
-    echo "✓ git restored from origin (working files preserved)"
-  else
-    echo "✗ self-heal clone failed — leaving repo untouched"
-  fi
-  rm -rf "$tmp"
-}
-
 # Tunnels we know about. Add new tunnel names here — no other code changes needed.
-TUNNELS=(chat comfyui dashboard grafana obsidian ipmi atinus mpt)
+TUNNELS=(chat comfyui dashboard grafana obsidian ipmi atinus comfyui_rocm mpt)
 
 # Build "name=url" pairs for each tunnel that has a URL on disk
 PAIRS=()
@@ -67,7 +36,6 @@ if [ "$ANY" -eq 0 ]; then
 fi
 
 cd "$REPO"
-ensure_git_healthy   # rebuild .git from origin if an unclean shutdown corrupted it
 
 # index.html cards point at the stable ./go/<name>/ paths and never change.
 # Write urls.json — the single source of truth the redirect pages fetch with
