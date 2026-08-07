@@ -19,7 +19,6 @@ fi
 # For systemd tunnels, "port" is the service name suffix (cloudflared-<name>)
 TUNNELS=(
   "chat|8080|process"
-  "comfyui|8188|process"
   "dashboard|3000|process"
   "ipmi|http://192.168.0.103|process"
   "atinus|8765|process"

@@ -50339,3 +50339,65 @@ To https://github.com/Saurishg/links-page.git
 [2026-08-07 22:43:04] Alert suppressed (cooldown): ⚠️ Links page health: not self-healing: atinus(not-serving) comfyui_rocm(not-serving) live-page-stale( atinus comfyui_rocm )
 Check tunnel_health.log on work-desktop.
 [2026-08-07 22:43:04] Health check done
+[2026-08-07 22:48:54] Health check starting
+[2026-08-07 22:48:59] atinus STALE — restarting
+[2026-08-07 22:49:34] atinus restarted but NOT serving (https://scheme-kentucky-pipes-checkout.trycloudflare.com)
+  [chat] → https://edges-sri-bathroom-promoting.trycloudflare.com
+  [comfyui] → https://dale-marshall-garlic-thank.trycloudflare.com
+  [dashboard] → https://bunch-awesome-smilies-part.trycloudflare.com
+  [grafana] → https://motorcycles-independence-maps-headline.trycloudflare.com
+  [obsidian] → https://lee-beth-roots-aware.trycloudflare.com
+  [ipmi] → https://every-breeds-tions-physician.trycloudflare.com
+  [atinus] → https://scheme-kentucky-pipes-checkout.trycloudflare.com
+  [mpt] → https://fairy-borders-deposits-para.trycloudflare.com
+[main 5f6bc4dfb] auto-update tunnel URLs (2026-08-07 22:49)
+ 2 files changed, 13 insertions(+), 13 deletions(-)
+To https://github.com/Saurishg/links-page.git
+   e7aee20a2..5f6bc4dfb  main -> main
+✓ Pushed pending commits to GitHub Pages
+[2026-08-07 22:49:39] Links page updated
+[2026-08-07 22:49:41] Live page stale (run 90): atinus
+  [chat] → https://edges-sri-bathroom-promoting.trycloudflare.com
+  [comfyui] → https://dale-marshall-garlic-thank.trycloudflare.com
+  [dashboard] → https://bunch-awesome-smilies-part.trycloudflare.com
+  [grafana] → https://motorcycles-independence-maps-headline.trycloudflare.com
+  [obsidian] → https://lee-beth-roots-aware.trycloudflare.com
+  [ipmi] → https://every-breeds-tions-physician.trycloudflare.com
+  [atinus] → https://scheme-kentucky-pipes-checkout.trycloudflare.com
+  [mpt] → https://fairy-borders-deposits-para.trycloudflare.com
+✓ URLs unchanged
+✓ Nothing to push
+[2026-08-07 22:49:41] Alert suppressed (cooldown): ⚠️ Links page health: not self-healing: atinus(not-serving) live-page-stale( atinus )
+Check tunnel_health.log on work-desktop.
+[2026-08-07 22:49:41] Health check done
+[2026-08-07 22:51:33] Health check starting
+[2026-08-07 22:51:39] atinus STALE — restarting
+[2026-08-07 22:52:17] atinus restarted but NOT serving (https://periodic-stones-restoration-posted.trycloudflare.com)
+  [chat] → https://edges-sri-bathroom-promoting.trycloudflare.com
+  [comfyui] → https://dale-marshall-garlic-thank.trycloudflare.com
+  [dashboard] → https://bunch-awesome-smilies-part.trycloudflare.com
+  [grafana] → https://motorcycles-independence-maps-headline.trycloudflare.com
+  [obsidian] → https://lee-beth-roots-aware.trycloudflare.com
+  [ipmi] → https://every-breeds-tions-physician.trycloudflare.com
+  [atinus] → https://periodic-stones-restoration-posted.trycloudflare.com
+  [mpt] → https://fairy-borders-deposits-para.trycloudflare.com
+[main a37b95414] auto-update tunnel URLs (2026-08-07 22:52)
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+To https://github.com/Saurishg/links-page.git
+   5f6bc4dfb..a37b95414  main -> main
+✓ Pushed pending commits to GitHub Pages
+[2026-08-07 22:52:23] Links page updated
+[2026-08-07 22:52:25] Live page stale (run 91): atinus
+  [chat] → https://edges-sri-bathroom-promoting.trycloudflare.com
+  [comfyui] → https://dale-marshall-garlic-thank.trycloudflare.com
+  [dashboard] → https://bunch-awesome-smilies-part.trycloudflare.com
+  [grafana] → https://motorcycles-independence-maps-headline.trycloudflare.com
+  [obsidian] → https://lee-beth-roots-aware.trycloudflare.com
+  [ipmi] → https://every-breeds-tions-physician.trycloudflare.com
+  [atinus] → https://periodic-stones-restoration-posted.trycloudflare.com
+  [mpt] → https://fairy-borders-deposits-para.trycloudflare.com
+✓ URLs unchanged
+✓ Nothing to push
+[2026-08-07 22:52:26] Alert suppressed (cooldown): ⚠️ Links page health: not self-healing: atinus(not-serving) live-page-stale( atinus )
+Check tunnel_health.log on work-desktop.
+[2026-08-07 22:52:26] Health check done
