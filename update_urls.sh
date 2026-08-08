@@ -48,7 +48,7 @@ ensure_git_healthy() {
 }
 
 # Tunnels we know about. Add new tunnel names here — no other code changes needed.
-TUNNELS=(chat dashboard grafana obsidian ipmi atinus mpt)
+TUNNELS=(chat dashboard grafana obsidian ipmi mpt)
 
 # Build "name=url" pairs for each tunnel that has a URL on disk
 PAIRS=()
