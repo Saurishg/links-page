@@ -171,10 +171,15 @@ STALE_STATE="/tmp/links_page_stale_runs"
 live=$(curl -s --max-time 20 "https://saurishg.github.io/links-page/urls.json?hc=$(date +%s)" 2>/dev/null)
 if [ -n "$live" ]; then
   missing=""
-  for f in /tmp/cf_url_*; do
-    u=$(cat "$f" 2>/dev/null)
+  # Iterate the configured TUNNELS, not /tmp/cf_url_* — a removed tunnel leaves
+  # its stale /tmp/cf_url_<name> behind, and globbing it kept auditing (and
+  # alerting on) a tunnel that no longer exists until the next reboot cleared
+  # /tmp. That is what spammed 1299 "not self-healing: atinus" alerts over the
+  # 10 days after the atinus origin was disabled (removed entirely 2026-08-09).
+  for t in "${TUNNELS[@]}"; do
+    n="${t%%|*}"
+    u=$(cat "/tmp/cf_url_$n" 2>/dev/null)
     [ -z "$u" ] && continue
-    n=$(basename "$f" | sed 's/cf_url_//')
     # urls.json is what the redirect pages actually fetch — it must be fresh
     if ! grep -qF "$u" <<< "$live"; then
       missing="$missing $n"
