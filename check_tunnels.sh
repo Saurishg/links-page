@@ -21,7 +21,6 @@ TUNNELS=(
   "chat|8080|process"
   "dashboard|3000|process"
   "ipmi|http://192.168.0.103|process"
-  "mpt|8501|process"
   "grafana|grafana|systemd"
   "obsidian|obsidian|systemd"
 )
