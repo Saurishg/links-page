@@ -134,6 +134,31 @@ fi
 # Single publisher for this repo: push anything unpushed (our commit and/or
 # trading.json commits from export_dashboard.py, which no longer pushes itself).
 # One push per run = one Pages deployment = no more racing deploys.
+# Self-heal DIVERGED history. ensure_git_healthy() above only covers a *corrupt*
+# repo; it does not cover a repo whose history has forked from origin. That
+# happened 2026-08-14: the root disk was cloned at ~11:42, the old disk kept
+# committing and pushing until 12:22, then the box rebooted onto the clone at
+# 12:36 with a repo missing those 14 commits. Every later commit built on the
+# stale base, so `git push` was rejected ("fetch first") for ~21h / 125 runs
+# while the audit correctly screamed live-page-stale and could not fix itself.
+#
+# This box is the ONLY writer of this repo and every tracked file here is
+# generated locally (urls.json, trading.json, index.html, go/*), so on
+# divergence the local side is authoritative. `-s ours` keeps local content but
+# records origin as a parent, so the push fast-forwards and origin's commits
+# stay reachable in history — nothing is actually lost.
+GIT_ASKPASS=echo git fetch --quiet origin 2>/dev/null || true
+behind=$(git rev-list --count main..origin/main 2>/dev/null || echo 0)
+if [ "${behind:-0}" -gt 0 ]; then
+  echo "⚠️  history diverged — origin has $behind commit(s) we lack; reconciling (-s ours)"
+  if git merge -s ours origin/main \
+       -m "auto-reconcile diverged history ($(date '+%Y-%m-%d %H:%M'), origin was $behind ahead)"; then
+    echo "✓ history reconciled — local content kept, origin history preserved"
+  else
+    echo "✗ auto-reconcile FAILED — manual git intervention needed"
+  fi
+fi
+
 if [ -n "$(git rev-list origin/main..main 2>/dev/null)" ]; then
   GIT_ASKPASS=echo git push origin main
   echo "✓ Pushed pending commits to GitHub Pages"
