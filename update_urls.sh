@@ -48,7 +48,8 @@ ensure_git_healthy() {
 }
 
 # Tunnels we know about. Add new tunnel names here — no other code changes needed.
-TUNNELS=(chat dashboard grafana obsidian ipmi)
+# ipmi dropped 2026-08-22 (SECURITY — public BMC; see check_tunnels.sh)
+TUNNELS=(chat dashboard grafana obsidian)
 
 # Build "name=url" pairs for each tunnel that has a URL on disk
 PAIRS=()

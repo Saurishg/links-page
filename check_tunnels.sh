@@ -17,10 +17,22 @@ fi
 
 # Tunnel definitions: name|port|type (systemd or process)
 # For systemd tunnels, "port" is the service name suffix (cloudflared-<name>)
+# 2026-08-22: chat and dashboard converted from "process" to "systemd".
+# The process path spawned tunnels with `disown`, which detached them from
+# fraqtoos-tunnel.service and left them parented to tunnel-health.service — a
+# ONESHOT unit that had already exited. So a healed tunnel ended up owned by a
+# dead cgroup: Restart=always could never revive it, and `systemctl restart
+# fraqtoos-tunnel` no longer touched it. Every tunnel is now a real unit.
 TUNNELS=(
-  "chat|8080|process"
-  "dashboard|3000|process"
-  "ipmi|http://192.168.0.103|process"
+  "chat|chat|systemd"
+  "dashboard|dashboard|systemd"
+  # ipmi REMOVED 2026-08-22 — SECURITY. start_tunnel.sh disabled this tunnel on
+  # 2026-07-30 ("IPMI = full server control", re-enable only behind an auth
+  # layer), but this list was never updated, so every health run silently
+  # respawned it and republished the BMC on the public links page. The healer
+  # was defeating the security decision. Do NOT re-add without an auth layer;
+  # use `tailscale serve` for private BMC access instead.
+  # "ipmi|http://192.168.0.103|process"
   "grafana|grafana|systemd"
   "obsidian|obsidian|systemd"
 )
@@ -123,9 +135,32 @@ restart_process_tunnel() {
   cat "$urlfile" 2>/dev/null
 }
 
+# Read the URL a systemd-managed tunnel is CURRENTLY advertising, straight from
+# its journal, rather than trusting the cached copy.
+current_systemd_url() {
+  journalctl -u "cloudflared-$1" --no-pager -n 300 2>/dev/null \
+    | grep -oP 'https://(?!api\.)[a-z0-9\-]+\.trycloudflare\.com' | tail -1
+}
+
 for entry in "${TUNNELS[@]}"; do
   IFS='|' read -r name target type <<< "$entry"
   url=$(cat "/tmp/cf_url_${name}" 2>/dev/null)
+
+  # Adopt-before-restart. Now that every tunnel has Restart=always, systemd
+  # revives a dead tunnel in ~15s with a NEW url, long before this 10-minute
+  # check runs. The cached url is then stale-but-the-tunnel-is-fine, and the
+  # old logic would "heal" a perfectly healthy tunnel — burning a third URL
+  # rotation and an extra Pages deploy every time systemd did its job.
+  # Pick up what the unit is actually serving first.
+  if [ "$type" = "systemd" ]; then
+    live_url=$(current_systemd_url "$name")
+    if [ -n "$live_url" ] && [ "$live_url" != "$url" ] && check_url "$live_url"; then
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] $name adopted new url from systemd → $live_url" >> "$LOG"
+      echo "$live_url" > "/tmp/cf_url_${name}"
+      UPDATED=1
+      continue
+    fi
+  fi
 
   if check_url "$url"; then
     continue
