@@ -1,5 +1,14 @@
 # Local-only artifacts
 update.log
+# logrotate suffixes. `update.log` does NOT match `update.log.1` or
+# `update.log.2.gz`, so six rotated logs sat tracked in this PUBLIC repo,
+# churning on every 5-minute run and leaving `git status` permanently dirty.
+# Same hole was found in fraqtoos-chat on 2026-08-23. Whenever a logrotate
+# config is added, re-check the matching ignore rule — rotation renames files
+# straight out from under a bare-name pattern.
+update.log.*
+tunnel_health.log
+tunnel_health.log.*
 btc_update.log
 btc_futures_update.log
 agentdb.rvf
