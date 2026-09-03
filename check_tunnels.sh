@@ -88,6 +88,13 @@ FAILED_TUNNELS=""
 
 restart_systemd_tunnel() {
   local name="$1"
+  # Clear a start-limit lockout first. The tunnel units carry
+  # StartLimitIntervalSec=300 / StartLimitBurst=5, so a tunnel that crash-loops
+  # five times in five minutes is left in `failed` - and in that state
+  # `systemctl restart` is REFUSED ("start request repeated too quickly"),
+  # which would leave this healer unable to heal the exact case it exists for.
+  # reset-failed on a healthy unit is a no-op, so this is safe unconditionally.
+  sudo systemctl reset-failed "cloudflared-${name}" 2>/dev/null || true
   sudo systemctl restart "cloudflared-${name}"
   sleep 8
   local url
