@@ -51,11 +51,24 @@ ensure_git_healthy() {
 # ipmi dropped 2026-08-22 (SECURITY — public BMC; see check_tunnels.sh)
 TUNNELS=(chat dashboard grafana obsidian)
 
-# Build "name=url" pairs for each tunnel that has a URL on disk
+# Moved off Cloudflare quick tunnels onto permanent names (2026-09-05):
+# nginx + a Let's Encrypt wildcard on the static IP. These do not rotate, so
+# they are read from here rather than from /tmp/cf_url_*. grafana alone burned
+# 54 distinct hostnames in 33 days, which is what this script existed to chase.
+# chat stays on its tunnel deliberately - it is the one with an execution surface.
+declare -A STATIC_URLS=(
+  [grafana]="https://grafana.fraqtos.duckdns.org"
+  [dashboard]="https://dash.fraqtos.duckdns.org"
+  [obsidian]="https://obsidian.fraqtos.duckdns.org"
+)
+
+# Build "name=url" pairs: a static URL if one is defined, else whatever the
+# tunnel healer last wrote to disk.
 PAIRS=()
 ANY=0
 for name in "${TUNNELS[@]}"; do
-  url=$(cat "/tmp/cf_url_${name}" 2>/dev/null || echo "")
+  url="${STATIC_URLS[$name]:-}"
+  [ -z "$url" ] && url=$(cat "/tmp/cf_url_${name}" 2>/dev/null || echo "")
   if [ -n "$url" ]; then
     PAIRS+=("${name}=${url}")
     ANY=1
