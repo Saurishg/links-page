@@ -25,7 +25,16 @@ fi
 # fraqtoos-tunnel` no longer touched it. Every tunnel is now a real unit.
 TUNNELS=(
   "chat|chat|systemd"
-  "dashboard|dashboard|systemd"
+  # grafana / dashboard / obsidian REMOVED 2026-09-05: they moved off Cloudflare
+  # onto nginx with a Let's Encrypt wildcard (*.fraqtos.duckdns.org) and their
+  # cloudflared units were disabled.
+  #
+  # This array is exactly how the IPMI tunnel came back from the dead in August:
+  # the unit was disabled but the name stayed here, so every health run found it
+  # "down" and restarted it. It happened again today - all three were disabled at
+  # 10:2x and the healer had them running again by 10:33. Disabling a unit is not
+  # enough; the name has to leave this array too.
+  # "dashboard|dashboard|systemd"
   # ipmi REMOVED 2026-08-22 — SECURITY. start_tunnel.sh disabled this tunnel on
   # 2026-07-30 ("IPMI = full server control", re-enable only behind an auth
   # layer), but this list was never updated, so every health run silently
@@ -33,8 +42,8 @@ TUNNELS=(
   # was defeating the security decision. Do NOT re-add without an auth layer;
   # use `tailscale serve` for private BMC access instead.
   # "ipmi|http://192.168.0.103|process"
-  "grafana|grafana|systemd"
-  "obsidian|obsidian|systemd"
+  # "grafana|grafana|systemd"
+  # "obsidian|obsidian|systemd"
 )
 
 # All URL checks resolve via DNS-over-HTTPS: a fresh trycloudflare hostname
