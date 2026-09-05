@@ -24,7 +24,12 @@ fi
 # dead cgroup: Restart=always could never revive it, and `systemctl restart
 # fraqtoos-tunnel` no longer touched it. Every tunnel is now a real unit.
 TUNNELS=(
-  "chat|chat|systemd"
+  # chat REMOVED 2026-09-05 — moved to https://chat.fraqtos.duckdns.org
+  # (nginx + wildcard cert). Its own token gate still guards it: the app
+  # treats any x-forwarded-for as remote, so the proxy keeps it closed.
+  # TUNNELS is now empty - nothing is left on Cloudflare. The array stays
+  # so the live-page audit below still runs.
+  # "chat|chat|systemd"
   # grafana / dashboard / obsidian REMOVED 2026-09-05: they moved off Cloudflare
   # onto nginx with a Let's Encrypt wildcard (*.fraqtos.duckdns.org) and their
   # cloudflared units were disabled.

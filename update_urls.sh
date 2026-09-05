@@ -55,11 +55,14 @@ TUNNELS=(chat dashboard grafana obsidian)
 # nginx + a Let's Encrypt wildcard on the static IP. These do not rotate, so
 # they are read from here rather than from /tmp/cf_url_*. grafana alone burned
 # 54 distinct hostnames in 33 days, which is what this script existed to chase.
-# chat stays on its tunnel deliberately - it is the one with an execution surface.
+# chat joined them 2026-09-05. Its own token gate still protects it: the app
+# treats any x-forwarded-for header as a remote caller, so proxied requests
+# must present the token. Nothing runs on Cloudflare any more.
 declare -A STATIC_URLS=(
   [grafana]="https://grafana.fraqtos.duckdns.org"
   [dashboard]="https://dash.fraqtos.duckdns.org"
   [obsidian]="https://obsidian.fraqtos.duckdns.org"
+  [chat]="https://chat.fraqtos.duckdns.org"
 )
 
 # Build "name=url" pairs: a static URL if one is defined, else whatever the
